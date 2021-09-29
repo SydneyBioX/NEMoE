@@ -1,0 +1,243 @@
+---
+title: "Getting started: NEMoE"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{NEMoE}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  comment = "#>"
+)
+```
+
+# Introduction
+
+Nutrition-Enterotype Mixture of Expert Model(NEMoE) is an R package that
+facilitates discover latent classes shaped by nutrition intake that makes
+relationship between gut microbiome and health outcome different.
+
+The methods use a regularized mixture of experts model framework
+identify such latent classes and using EM algorithm to fitting
+the parameters in the model.
+
+In this vignette, we go through a 16S microbiome data of Parkinson's disease
+to identify the latent classes shaped by nutrition intake
+and finding the microbiome signatures for each latent class.
+
+```{r setup}
+library(ggplot2)
+library(NEMoE)
+library(phyloseq)
+```
+
+# Gut microbiome and Parkinson's disease
+
+The `PD` dataset contain data from a gut microbiome-Parkinson's disease study, 
+the nutrition intake of each individual is also provided from food frequency 
+questionnaire. We provide two type of the data(i.e. phyloseq object and a list)
+to construct input of NEMoE.
+
+In this example, we will use NEMoE to identify two latent class of different 
+nutrition pattern with altered microbiome-PD relationships and identify the 
+related nutrition features for the latent class and microbiome signatures 
+for each latent class.
+
+```{r}
+data("PD")
+```
+
+## Build the `NEMoE` object from list
+
+First we build the `NEMoE` object, the input data to build `NEMoE` have three 
+part: microbiome data, nutrition data and health outcome. The nutrition data 
+can be either matrix or dataframe which each row is a sample and each column is 
+a nutrient. The microbiome data can be either a list of table that contain 
+several microbiome matrix where each row is a sample and each column is a taxa
+(at the level) or a `phyloseq`. The response is a vector of different health 
+state.
+
+In the following example, we build `NEMoE` object from list of microbiome data.
+
+```{r}
+Microbiome = PD$data_list$Microbiome
+Nutrition = PD$data_list$Nutrition
+Response = PD$data_list$Response
+```
+
+NEMoE object can also incorporate the parameters used in the fitting, including
+`K`,`lambda1`, `lambda2`, `alpha1`, `alpha2` and `cvParams`.
+
+```{r}
+NEMoE = NEMoE_buildFromList(Microbiome, Nutrition, Response, K = 2, 
+                            lambda1 = c(0.005, 0.014, 0.016, 0.023, 0.025),
+                            lambda2 = 0.02, alpha1 = 0.5, alpha2 = 0.5)
+```
+
+### Fit the `NEMoE` object
+
+Now using the `fitNEMoE` function, we can fit `NEMoE` object with the specified
+parameters in the `NEMoE` object.
+
+```{r}
+NEMoE = fitNEMoE(NEMoE)
+```
+
+The fitted log-likelihood can be get from `getLL` function.
+```{r}
+getLL(NEMoE)
+```
+
+
+The corresponding coefficients in gating function, i.e. the effect size of 
+each nutrition variables of their contribution to the different latent class 
+can be obtained from `getCoef` function.
+
+```{r}
+coef.Gating <- getCoef(NEMoE)$coef.gating
+```
+
+These coefficients of gating network can be plotted by `plotGating` function.
+
+```{r}
+plotGating(NEMoE)
+```
+
+The corresponding coefficients in experts network, i.e. the effect size of each 
+microbiome features of their contribution to health outcome (PD state here)
+in different latent class can be obtained from `getCoef` function.
+
+```{r}
+coef.Experts <- getCoef(NEMoE)$coef.experts
+```
+
+These coefficients of experts network can be plotted by `plotGating` function.
+
+```{r}
+plotExperts(NEMoE)
+```
+
+### Single level `NEMoE`
+
+`NEMoE` can also built based on single level data, we illustrated it using
+`Genus` level of the Microbiome-PD dataset.
+
+```{r}
+Microbiome_gen <- Microbiome$Genus
+```
+
+```{r}
+NEMoE_gen = NEMoE_buildFromList(Microbiome_gen, Nutrition, Response, K = 2, 
+                            lambda1 = 0.028, lambda2 = 0.02,
+                            alpha1 = 0.5, alpha2 = 0.5)
+```
+
+```{r}
+NEMoE_gen <- fitNEMoE(NEMoE_gen, restart_it = 20)
+```
+
+```{r}
+plotGating(NEMoE_gen)
+```
+
+```{r}
+p <- plotExperts(NEMoE_gen)[[1]]
+p + theme(axis.text.x = element_text(angle = 45))
+```
+
+
+## Build the `NEMoE` object from phyloseq
+
+In parallel, `NEMoE` object can be built from `phyloseq` object from the 
+microbiome counts data. `NEMoE` wrapper functions for TSS normalization and 
+transformations of the counts data. Also which levels of the data incorporated 
+in the data can be determined by user.
+
+```{r}
+sample_PD <- sample_data(PD$ps)
+Response <- sample_PD$PD
+Nutrition <- sample_PD[,-ncol(sample_PD)]
+```
+
+In the following example, we first TSS normalized data, then filter the taxa
+with prevalance larger than 0.7 (i.e. the taxa non-zero in more
+than 70% of the sample) and variance larger than 5e-5. Then the data are further
+tranformed using arcsin transformation and zscored. The resulting Microbiome 
+data is to used built `NEMoE` object. 
+
+```{r}
+NEMoE_ps <- NEMoE_buildFromPhyloseq(ps = PD$ps, Nutrition = scale(Nutrition),
+                                 Response = Response,  K = 2, 
+                                 lambda1 = c(0.005, 0.014, 0.016, 0.023, 0.025),
+                                 lambda2 = 0.02, alpha1 = 0.5, alpha2 = 0.5,
+                                 filtParam = list(prev = 0.7, var = 1e-5),
+                                 transParam = list(method = "asin", scale = T),
+                                 taxLevel = c("Phylum","Order","Family",
+                                              "Genus","ASV"))
+```
+
+The `NEMoE` object can also be fitted and visualized as it is
+in the previous section.
+
+```{r}
+NEMoE_ps <- fitNEMoE(NEMoE_ps)
+```
+
+```{r}
+plotGating(NEMoE_ps)
+```
+
+```{r}
+plotExperts(NEMoE_ps)
+```
+
+## Evaluation and cross validation of NEMoE
+
+We provide many metric including statistics such as `AIC`, `BIC` and `ICL` and
+cross validation metric such as cross validation accuracy and AUC.
+
+```{r}
+calcCriterion(NEMoE, "all")
+```
+
+Also the one can use this procedure to select parameters.
+
+```{r}
+NEMoE <- cvNEMoE(NEMoE)
+```
+
+The selected parameters obtained from the cross validation result can be used to
+fitting the model.
+
+```{r}
+lambda1_choose <- NEMoE@cvResult$lambda1_choose
+lambda2_choose <- NEMoE@cvResult$lambda2_choose
+```
+
+```{r}
+NEMoE <- setParam(NEMoE, lambda1 = lambda1_choose, lambda2 = lambda2_choose)
+```
+
+```{r}
+NEMoE <- fitNEMoE(NEMoE)
+```
+
+```{r}
+plotGating(NEMoE)
+```
+
+```{r}
+plotExperts(NEMoE)
+```
+
+
+# Misc
+
+```{r}
+sessionInfo()
+```
