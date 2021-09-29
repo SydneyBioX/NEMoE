@@ -4,35 +4,16 @@ NEMoE is an R package modelling A nutrition aware regularized mixture of experts
 
 ## Installation
 
-### Packages Requirements
-
-- Rcpp 
-- RcppEigen 
-- shinyjs ≥ 1.1
-- DT ≥ 0.13
-- directlabels ≥ 2020.1.31
-- mclust ≥ 5.4.5
-- GA ≥ 3.2
-- WGCNA ≥ 1.69
-- tidyverse ≥ 1.3.0
-- plotly ≥ 4.9.2
-- visNetwork ≥ 2.0.9
-- limma ≥ 3.42.2
-- dynamicTreeCut ≥ 1.63-1
-- psych ≥ 1.9.12.31
-- fields ≥ 10.3
-- plotly ≥ 4.9.2
-- reshape2 ≥ 1.4.3
-
-### Get started
-
-To use this shiny app you can :
+To use this package you can :
  
- - install it through
+install it through
  
-	``` r
-	remotes::install_github("SydneyBioX/NEMoE")
-	```
+``` r
+remotes::install_github("SydneyBioX/NEMoE")
+```
 ## Vignette
 
 You can find the vignette at our website: https://sydneybiox.github.io/NEMoE/.
+
+## Contact us
+If you have any enquiries, especially about running NEMoE model on your own data, then please contact bioinformatics@maths.usyd.edu.au. You can also open an issue on GitHub.
