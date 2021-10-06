@@ -10,18 +10,31 @@ Description: A nutrition aware regularized mixture of experts model addressing
             the elastic penalty and binary output. The input can be single level
             or multi-level.
 License: GPL (>= 3)
-Depends: R (>= 3.5)
-Imports: Rcpp, methods, stats, Matrix, graphics, MASS, base, glmnet,
-        phyloseq, ggplot2, reshape2, BiocParallel, S4Vectors, ggpubr,
-        purrr, ROCR, mclust
-Suggests: knitr, rmarkdown
-LinkingTo: Rcpp, RcppEigen
-Collate: build.R data.R fitNEMoE.R NEMoE_class.R NEMoE_crit.R
-        NEMoE_cv.R NEMoE_generator.R NEMoE_plot.R utils.R RcppExports.R
+Depends: 
+    R (>= 3.5)
+Imports: 
+    Rcpp, methods, stats, Matrix, graphics, MASS, base, glmnet, 
+    phyloseq, ggplot2, reshape2, BiocParallel, S4Vectors, ggpubr, purrr,
+    ROCR, mclust
+Suggests: 
+    knitr,
+    rmarkdown
+LinkingTo: 
+    Rcpp,
+    RcppEigen
+Collate:
+    build.R
+    data.R
+    fitNEMoE.R
+    NEMoE_class.R
+    NEMoE_crit.R
+    NEMoE_cv.R
+    NEMoE_generator.R
+    NEMoE_plot.R
+    utils.R
+    RcppExports.R
 VignetteBuilder: knitr
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
-NeedsCompilation: yes
-Packaged: 2021-09-27 15:27:32 UTC; Lenovo

@@ -1,0 +1,8 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.test.Rmd$
+^\.temp.RData$
+^\.Rhistory$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

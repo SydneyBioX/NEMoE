@@ -263,7 +263,7 @@ genNEMoE <- function(n = NULL, p = NULL, q = 30, K0 = 2, Sigma = NULL,
 .genMicro_dm <- function(N, n, p, a){
 
   if (missing(N)){
-    N = stats::rpois(n, 1e5)
+    N <- runif(n, 5000, 25000)
   }
 
   if (length(N) == 1)
@@ -278,8 +278,10 @@ genNEMoE <- function(n = NULL, p = NULL, q = 30, K0 = 2, Sigma = NULL,
   }else{
     a <- a[1:p]
   }
-  a <- abs(a)/sum(abs(a))
+  a <- abs(a)
+
   P <- rDirichlet(n, a * (1 - 0.3)/0.3)
+
   X <- matrix(0, n, p)
 
   for (i in 1:n) X[i, ] <- rmultinom(1, N[i], P[i, ])

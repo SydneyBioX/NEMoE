@@ -940,11 +940,13 @@ Eigen::VectorXd sMulti_single(Eigen::MatrixXd X, Eigen::VectorXd y,
     z0 = as<Eigen::Map<Eigen::VectorXd>>(z);
     weight0 = as<Eigen::Map<Eigen::VectorXd>>(weight);
     beta = Elnet(X, z0, weight0, lambda, alpha);
+
     beta_btr = clippingVX(beta, -beta_max, beta_max);
     if(btr){
 
       beta_btr = BtrLogit(X, y1, R, lambda, alpha, beta0,
                           beta_btr, residual_k, 0.8);
+
     }
 
     cond1 = ((beta_btr - beta0).array().abs().sum() < 1e-4);
@@ -987,6 +989,7 @@ Eigen::MatrixXd sMulti_step(Eigen::MatrixXd X, Eigen::MatrixXd y,
                             double alpha, double beta_max,
                             int itmax = 1e3, bool btr = true){
 
+
   int n = X.rows(), p = X.cols(), p1 = Beta0.rows(), K = y.cols();
 
   Eigen::MatrixXd Beta_k(p1, K - 1), Beta(p1, K);
@@ -1014,6 +1017,7 @@ Eigen::MatrixXd sMulti_step(Eigen::MatrixXd X, Eigen::MatrixXd y,
     }
 
   }
+
   return Beta;
 
 }
@@ -1023,13 +1027,13 @@ Eigen::MatrixXd sMulti1(Eigen::MatrixXd X, Eigen::MatrixXd y,
                         double alpha, double beta_max, int itmax1 = 1e2,
                         int itmax2 = 1e3, bool btr = true){
 
+
   int n = X.rows(), p = X.cols(), K0=y.cols();
-  Eigen::MatrixXd X1(n, p +1);
+  Eigen::MatrixXd X1(n, p + 1);
   Eigen::MatrixXd ones = Eigen::MatrixXd::Ones(n,1),
     onep1 = Eigen::MatrixXd::Ones(p + 1,1);
   Eigen::MatrixXd Beta0, Beta;
   Eigen::MatrixXd y1(n, 2);
-  NumericVector beta1;
 
   double pi_temp;
   Eigen::ArrayXd pi_temp1;
@@ -1038,7 +1042,7 @@ Eigen::MatrixXd sMulti1(Eigen::MatrixXd X, Eigen::MatrixXd y,
     y1 << ones - y, y;
     K = 2;
   }
-  LogicalVector early_stop(K - 1);
+  LogicalVector early_stop(K);
 
   X1 << ones, X;
   Beta0 = Eigen::MatrixXd::Zero(p + 1, K);
@@ -1071,15 +1075,17 @@ Eigen::MatrixXd sMulti1(Eigen::MatrixXd X, Eigen::MatrixXd y,
       Beta = sMulti_step(X, y, Beta0, lambda, R, alpha, beta_max, itmax2, btr);
     }
 
-    for(int k =0; k < p + 1; k++){
-      beta1 = wrap(Beta.row(k));
-      if(k == 0){
-        beta1 = beta1 - mean(beta1);
-      }else{
-        beta1 = beta1 - median(beta1);
-      }
-      Beta.row(k) = as<Eigen::Map<Eigen::MatrixXd>>(beta1);
-    }
+    Beta = projMultiConstraint(Beta, alpha);
+
+//    for(int k =0; k < p + 1; k++){
+//      beta1 = wrap(Beta.row(k));
+//      if(k == 0){
+//        beta1 = beta1 - mean(beta1);
+//      }else{
+//        beta1 = beta1 - median(beta1);
+//      }
+//      Beta.row(k) = as<Eigen::Map<Eigen::MatrixXd>>(beta1);
+//    }
 
     cond1 = ((Beta - Beta0).array().abs().sum() < 1e-9);
     cond2 = (it > itmax1);
@@ -1736,6 +1742,7 @@ Eigen::MatrixXd NEMoE_step(Eigen::MatrixXd X, NumericVector seg,
 
     V_new = NEMoE_btrV(X, Z, y, seg, r_i1, lambda1, alpha1,
                        lambda2, alpha2, W_new, V_new, V_old, adapt, PLL0);
+
   }
 
   if(adapt){

@@ -242,7 +242,7 @@ createParameterList <- function(lambda1 = 0.02, lambda2 = 0.015,
 
   params = list(lambda1 = lambda1, lambda2 = lambda2,
                 alpha1 = alpha1, alpha2 = alpha2,
-                beta_max = beta_max, EM_alg = EM_alg,
+                beta_max = beta_max, EM_alg = EM_alg, init = init,
                 itmax = itmax, itmin = itmin, adapt = adapt,
                 btr = btr, stop_all = stop_all, verbose = verbose,
                 early_stop = early_stop)
