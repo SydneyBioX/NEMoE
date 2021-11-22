@@ -20,6 +20,15 @@ NEMoE_predict <- function(NEMoE, X_new, Z_new = NULL,
                           transform = TRUE,
                           name_match = FALSE){
 
+  if(is.data.frame(X_new) || is.matrix(X_new)){
+    X_new = list(as.matrix(X_new))
+  }
+
+  if(!is.null(Z_new)){
+    if(is.data.frame(Z_new) || is.matrix(Z_new)){
+      Z_new = as.matrix(Z_new)
+    }
+  }
   K <- NEMoE@K
   beta <- NEMoE@NEMoE_output$beta
   gamma <- NEMoE@NEMoE_output$gamma
@@ -28,31 +37,15 @@ NEMoE_predict <- function(NEMoE, X_new, Z_new = NULL,
   .transformation = NEMoE@.transformation
   method = .transformation$method
 
-  if(length(.transformation$mu_Z) && length(.transformation$sd_Z)){
-    scale_Z = T
-  }else{
-    scale_Z = F
-  }
-
   if(is.null(Z_new)){
     probs = rep(1/K, K)
   }else{
     if(name_match){
       Z_new <- .mathcNEMoE(NEMoE@Nutrition, Z_new)
     }
-    if(scale_Z){
-      mu_Z <- .transformation$mu_Z
-      sd_Z <- .transformation$mu_Z
-      Z_new <- (Z_new - mu_Z)/sd_Z
-    }
+
     Z1 = cbind(rep(1,n), Z_new)
     probs = calcProb(Z1, gamma)
-  }
-
-  if(length(.transformation$mu_X) && length(.transformation$sd_X)){
-    scale_X = T
-  }else{
-    scale_X = F
   }
 
   if(level == "all"){
@@ -66,11 +59,6 @@ NEMoE_predict <- function(NEMoE, X_new, Z_new = NULL,
       if(transform){
         X_temp <- compTransform(X_temp, method = method, scale = F)
       }
-      if(scale_X){
-        mu_X_temp <- .transformation$mu_X[[i]]
-        sd_X_temp <- .transformation$sd_X[[i]]
-        X_temp <- (X_temp - mu_X_temp)/sd_X_temp
-      }
       X_temp1 <- cbind(rep(1,n),X_temp)
       probs_temp = X_temp1 %*% beta[[i]]
       probs_temp = matrix(sapply(probs_temp, .logistic), nrow = nrow(probs_temp))
@@ -82,13 +70,14 @@ NEMoE_predict <- function(NEMoE, X_new, Z_new = NULL,
   }else{
     y = matrix(0, nrow = n, ncol = 1)
     beta_i = beta[[level]]
-    X_new <- .mathcNEMoE(NEMoE@Microbiome[[level]], X_new)
-    if(scale_X){
-      mu_X_temp <- .transformation$mu_X[[level]]
-      sd_X_temp <- .transformation$sd_X[[level]]
-      X_new1 <- (X_new - mu_X_temp)/sd_X_temp
+    X_temp <- X_new[[1]]
+    if(name_match){
+      X_temp <- .mathcNEMoE(NEMoE@Microbiome[[level]], X_temp)
     }
-    X_temp1 <- cbind(rep(1,n), X_new1)
+    if(transform){
+      X_temp <- compTransform(X_temp, method = method, scale = F)
+    }
+    X_temp1 <- cbind(rep(1,n), X_temp)
     probs_temp <- X_temp1 %*% beta_i
     probs_temp = matrix(sapply(probs_temp, .logistic), nrow = nrow(probs_temp))
     probs_sub = list()

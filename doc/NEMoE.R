@@ -21,7 +21,7 @@ Response = PD$data_list$Response
 
 ## -----------------------------------------------------------------------------
 NEMoE = NEMoE_buildFromList(Microbiome, Nutrition, Response, K = 2, 
-                            lambda1 = c(0.005, 0.014, 0.016, 0.023, 0.025),
+                            lambda1 = c(0.005, 0.01, 0.016, 0.023, 0.025),
                             lambda2 = 0.02, alpha1 = 0.5, alpha2 = 0.5,
                             cvParams = createCVList(g1 = 10, shrink = 0.4,
                                                     track = F))
@@ -100,7 +100,7 @@ NEMoE_ps <- NEMoE_buildFromPhyloseq(ps = PD$ps, Nutrition = scale(Nutrition),
                                  lambda1 = c(0.005, 0.014, 0.016, 0.023, 0.025),
                                  lambda2 = 0.02, alpha1 = 0.5, alpha2 = 0.5,
                                  filtParam = list(prev = 0.7, var = 1e-5),
-                                 transParam = list(method = "asin", scale = T),
+                                 transParam = list(method = "asin"),
                                  taxLevel = c("Phylum","Order","Family",
                                               "Genus","ASV"))
 
@@ -117,7 +117,7 @@ print(p_list[[1]])
 print(p_list[[2]])
 
 ## ----fig.height=8, fig.width=8------------------------------------------------
-p_list <- plotExperts(NEMoE)
+p_list <- plotExperts(NEMoE_ps)
 
 ## ----fig.height=8, fig.width=8------------------------------------------------
 print(p_list[[1]] + ggtitle("Coefficients of Phylum level") + theme(axis.text.x = element_text(angle = 45))) 

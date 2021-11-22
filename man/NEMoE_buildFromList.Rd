@@ -12,6 +12,7 @@ NEMoE_buildFromList(
   cvParams = list(),
   taxLevel = NULL,
   taxTab = NULL,
+  standardize = TRUE,
   ...
 )
 }
@@ -31,6 +32,9 @@ convert to a list automatically.}
 \item{taxLevel}{A character of selected name of taxonomic levels.}
 
 \item{taxTab}{A dataframe of taxonomic table.}
+
+\item{standardize}{Logical flag for x variable standardization.
+Default is standardize=TRUE.}
 
 \item{...}{Other parameters can pass to NEMoE_buildFromList.
 See \code{\link{createParameterList}}}

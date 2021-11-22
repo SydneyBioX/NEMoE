@@ -1,6 +1,7 @@
 ---
 title: "Getting started: NEMoE"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{NEMoE}
   %\VignetteEngine{knitr::rmarkdown}
@@ -24,7 +25,13 @@ relationship between gut microbiome and health outcome different.
 
 The methods use a regularized mixture of experts model framework
 identify such latent classes and using EM algorithm to fitting
-the parameters in the model.
+the parameters in the model. The overall workflow of NEMoE are describe in the
+following figure:
+
+![workflow](../inst/figures/workflow.jpg)
+NEMoE use the nutrition data, microbiome data and health outcome as input
+to identify latent class based on the nutrients intake 
+as well as the corresponding diet related microbiome signatures of disease.
 
 In this vignette, we go through a 16S microbiome data of Parkinson's disease
 to identify the latent classes shaped by nutrition intake
@@ -75,8 +82,10 @@ NEMoE object can also incorporate the parameters used in the fitting, including
 
 ```{r}
 NEMoE = NEMoE_buildFromList(Microbiome, Nutrition, Response, K = 2, 
-                            lambda1 = c(0.005, 0.014, 0.016, 0.023, 0.025),
-                            lambda2 = 0.02, alpha1 = 0.5, alpha2 = 0.5)
+                            lambda1 = c(0.005, 0.01, 0.016, 0.023, 0.025),
+                            lambda2 = 0.02, alpha1 = 0.5, alpha2 = 0.5,
+                            cvParams = createCVList(g1 = 10, shrink = 0.4,
+                                                    track = F))
 ```
 
 ### Fit the `NEMoE` object
@@ -105,8 +114,17 @@ coef.Gating <- getCoef(NEMoE)$coef.gating
 These coefficients of gating network can be plotted by `plotGating` function.
 
 ```{r}
-plotGating(NEMoE)
+p_list <- plotGating(NEMoE)
 ```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[1]])
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[2]])
+```
+
 
 The corresponding coefficients in experts network, i.e. the effect size of each 
 microbiome features of their contribution to health outcome (PD state here)
@@ -119,7 +137,27 @@ coef.Experts <- getCoef(NEMoE)$coef.experts
 These coefficients of experts network can be plotted by `plotGating` function.
 
 ```{r}
-plotExperts(NEMoE)
+p_list <- plotExperts(NEMoE)
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[1]] + ggtitle("Coefficients of Phylum level") + theme(axis.text.x = element_text(angle = 45))) 
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[2]] + ggtitle("Coefficients of Order level") + theme(axis.text.x = element_text(angle = 45))) 
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[3]] + ggtitle("Coefficients of Family level") + theme(axis.text.x = element_text(angle = 45))) 
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[4]] + ggtitle("Coefficients of Genus level") + theme(axis.text.x = element_text(angle = 45, size = 5))) 
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[5]] + ggtitle("Coefficients of ASV level") + theme(axis.text.x = element_blank())) 
 ```
 
 ### Single level `NEMoE`
@@ -142,12 +180,21 @@ NEMoE_gen <- fitNEMoE(NEMoE_gen, restart_it = 20)
 ```
 
 ```{r}
-plotGating(NEMoE_gen)
+p_list <- plotGating(NEMoE_gen)
 ```
 
-```{r}
+```{r fig.height=8, fig.width=8}
+print(p_list[[1]])
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[2]])
+```
+
+
+```{r fig.height=8, fig.width=8}
 p <- plotExperts(NEMoE_gen)[[1]]
-p + theme(axis.text.x = element_text(angle = 45))
+p + theme(axis.text.x = element_text(angle = 45, size = 5))
 ```
 
 
@@ -176,7 +223,7 @@ NEMoE_ps <- NEMoE_buildFromPhyloseq(ps = PD$ps, Nutrition = scale(Nutrition),
                                  lambda1 = c(0.005, 0.014, 0.016, 0.023, 0.025),
                                  lambda2 = 0.02, alpha1 = 0.5, alpha2 = 0.5,
                                  filtParam = list(prev = 0.7, var = 1e-5),
-                                 transParam = list(method = "asin", scale = T),
+                                 transParam = list(method = "asin"),
                                  taxLevel = c("Phylum","Order","Family",
                                               "Genus","ASV"))
 ```
@@ -189,11 +236,39 @@ NEMoE_ps <- fitNEMoE(NEMoE_ps)
 ```
 
 ```{r}
-plotGating(NEMoE_ps)
+p_list <- plotGating(NEMoE_ps)
 ```
 
-```{r}
-plotExperts(NEMoE_ps)
+```{r fig.height=8, fig.width=8}
+print(p_list[[1]])
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[2]])
+```
+
+```{r fig.height=8, fig.width=8}
+p_list <- plotExperts(NEMoE_ps)
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[1]] + ggtitle("Coefficients of Phylum level") + theme(axis.text.x = element_text(angle = 45))) 
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[2]] + ggtitle("Coefficients of Order level") + theme(axis.text.x = element_text(angle = 45))) 
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[3]] + ggtitle("Coefficients of Family level") + theme(axis.text.x = element_text(angle = 45))) 
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[4]] + ggtitle("Coefficients of Genus level") + theme(axis.text.x = element_text(angle = 45, size = 5))) 
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[5]] + ggtitle("Coefficients of ASV level") + theme(axis.text.x = element_blank())) 
 ```
 
 ## Evaluation and cross validation of NEMoE
@@ -228,11 +303,39 @@ NEMoE <- fitNEMoE(NEMoE)
 ```
 
 ```{r}
-plotGating(NEMoE)
+p_list <- plotGating(NEMoE_ps)
+```
+
+```{r fig.height=8, fig.width=8} 
+print(p_list[[1]])
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[2]])
 ```
 
 ```{r}
-plotExperts(NEMoE)
+p_list <- plotExperts(NEMoE)
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[1]] + ggtitle("Coefficients of Phylum level") + theme(axis.text.x = element_text(angle = 45))) 
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[2]] + ggtitle("Coefficients of Order level") + theme(axis.text.x = element_text(angle = 45))) 
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[3]] + ggtitle("Coefficients of Family level") + theme(axis.text.x = element_text(angle = 45))) 
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[4]] + ggtitle("Coefficients of Genus level") + theme(axis.text.x = element_text(angle = 45, size = 5))) 
+```
+
+```{r fig.height=8, fig.width=8}
+print(p_list[[5]] + ggtitle("Coefficients of ASV level") + theme(axis.text.x = element_blank())) 
 ```
 
 

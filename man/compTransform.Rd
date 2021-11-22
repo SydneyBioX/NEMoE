@@ -4,7 +4,7 @@
 \alias{compTransform}
 \title{Transformation of compositional data}
 \usage{
-compTransform(X, eps = 1e-04, method = "comp", scale = T)
+compTransform(X, eps = 1e-04, method = "comp", scale = F)
 }
 \arguments{
 \item{X}{a matrix to transform.}

@@ -13,10 +13,11 @@
 #' var(varaince of features).
 #' @param transParam A list of parameters for transformation of Microbiome data.
 #' See \code{\link{compTransform}}.
+#' @param standardize Logical flag for x variable standardization.
+#' Default is standardize=TRUE.
 #' @param cvParams A list of cross validation parameters.
 #' @param taxLevel A character of selected name of taxonomic levels.
 #' @param taxTab A dataframe of taxonomic table.
-#' @param TSS A logical variable indicate whether use TSS normalization.
 #' @param ... Other parameters can pass to NEMoE_buildFromPhyloseq.
 #' See \code{\link{createParameterList}}
 #' @return A NEMoE object.
@@ -30,8 +31,9 @@
 NEMoE_buildFromPhyloseq <- function(ps, Nutrition, Response, K = NULL,
                                     gatherParam = list(), filtParam = list(),
                                     transParam = list(), cvParams = list(),
-                                    taxLevel = NULL, taxTab = NULL, ...,
-                                    TSS = T){
+                                    taxLevel = NULL, taxTab = NULL,
+                                    standardize = TRUE, ...
+                                    ){
   if(is.null(taxLevel)){
     taxLevel = c("Phylum","Order","Family","Genus","ASV")
   }
@@ -42,60 +44,51 @@ NEMoE_buildFromPhyloseq <- function(ps, Nutrition, Response, K = NULL,
 #  for(i in 1:L){
 #    Microbiome[[i]] <- matrix(Microbiome[[i]], nrow = nrow(Microbiome[[i]]))
 #  }
-  .transformation = list(method = "none", mu_X = list(), sd_X = list())
+  .transformation = list(method = "none", mu_X = list(), sd_X = list(),
+                         mu_Z = c(), sd_Z = c())
 
   if(!length(filtParam)){
     filtParam = list(prev = 0.7, var = 5e-5)
   }
 
   if(!length(transParam)){
-    transParam = list(method = "comp", scale = T)
+    transParam = list(method = "comp", scale = F)
   }
 
   ps <- phyloseq::transform_sample_counts(ps, function(x){x / sum(x)})
+  id0 <- list()
 
   for(i in 1:L){
 
-    if(taxLevel[i] %in% c("ASV","OTU", "asv", "otu")){
-      id_out = TRUE
-      id0 = 1:ncol(Microbiome[[i]])
-    }else{
-      id_out = FALSE
-    }
+    id0[[i]] <- rep(T,ncol(Microbiome[[i]]))
+    names(id0[[i]]) <- colnames(Microbiome[[i]])
 
     if(!is.null(filtParam$prev)){
       q_filt = purrr::partial(stats::quantile, probs = filtParam$prev)
-      M_temp <- .filterComp(Microbiome[[i]], q_filt, 0, id_out)
+      M_temp <- filterComp(Microbiome[[i]], q_filt, 0, id_out = TRUE)
       Microbiome[[i]] <- M_temp$X
-      if(id_out){
-        id0 <- id0[M_temp$id]
-      }
+      id_temp <- M_temp$id
+      id0[[i]][id0[[i]]] <- as.logical(id0[[i]][id0[[i]]] * id_temp)
     }
 
     if(!is.null(filtParam$var)){
-      M_temp <- .filterComp(Microbiome[[i]], stats::var, filtParam$var, id_out)
+      M_temp <- filterComp(Microbiome[[i]], stats::var, filtParam$var,
+                           id_out = TRUE)
       Microbiome[[i]] <- M_temp$X
-      if(id_out){
-        id0 <- id0[M_temp$id]
-      }
+      id_temp <- M_temp$id
+      id0[[i]][id0[[i]]] <- as.logical(id0[[i]][id0[[i]]] * id_temp)
     }
   }
 
   for(i in 1:L){
+
     Microbiome[[i]] <- do.call(compTransform,c(list(Microbiome[[i]]), transParam))
     .transformation$method = transParam$method
-    .transformation$mu_X[[i]] = attr(Microbiome[[i]], "scaled:center")
-    .transformation$sd_X[[i]] = attr(Microbiome[[i]], "scaled:scale")
   }
 
   if(is.data.frame(Nutrition) || is.matrix(Nutrition)){
     Nutrition = as.matrix(Nutrition)
   }
-
-  .transformation$mu_Z = attr(Nutrition, "scaled:center")
-  .transformation$sd_Z = attr(Nutrition, "scaled:scale")
-
-  taxTab = as.data.frame(ps@tax_table)[id0,]
 
 
   if(is.factor(Response)){
@@ -116,11 +109,32 @@ NEMoE_buildFromPhyloseq <- function(ps, Nutrition, Response, K = NULL,
     K = 2
   }
 
+  if(standardize){
+
+    method0 <- .transformation$method
+
+    .transformation = list(method = method0, mu_X = list(), sd_X = list(),
+                           mu_Z = c(), sd_Z = c(), keepid = id0)
+
+    Nutrition <- scale(Nutrition)
+    .transformation$mu_Z <- attr(Nutrition,"scaled:center")
+    .transformation$sd_Z <- attr(Nutrition,"scaled:scale")
+
+    for(i in 1:L){
+      Microbiome[[i]] <- scale(Microbiome[[i]])
+      .transformation$mu_X[[i]] = attr(Microbiome[[i]], "scaled:center")
+      .transformation$sd_X[[i]] = attr(Microbiome[[i]], "scaled:scale")
+    }
+
+  }else{
+    .transformation$keepid = id0
+  }
+
   NEMoE = .NEMoE(Microbiome = Microbiome, Nutrition = Nutrition,
                  Response = Response, params = params,
                  cvParams = cvParams, K = K, taxLevel = taxLevel,
                  taxTab = taxTab, ResponseLevel = ResponseLevel,
-                 .transformation = .transformation)
+                 .transformation = .transformation, standardize = standardize)
 
   return(NEMoE)
 
@@ -140,6 +154,8 @@ NEMoE_buildFromPhyloseq <- function(ps, Nutrition, Response, K = NULL,
 #' @param cvParams A list of cross validation parameters.
 #' @param taxLevel A character of selected name of taxonomic levels.
 #' @param taxTab A dataframe of taxonomic table.
+#' @param standardize Logical flag for x variable standardization.
+#' Default is standardize=TRUE.
 #' @param ... Other parameters can pass to NEMoE_buildFromList.
 #' See \code{\link{createParameterList}}
 #' @return A NEMoE object.
@@ -154,9 +170,8 @@ NEMoE_buildFromPhyloseq <- function(ps, Nutrition, Response, K = NULL,
 #'
 NEMoE_buildFromList <- function(Microbiome, Nutrition, Response,
                                 K = NULL, cvParams = list(),
-                                taxLevel = NULL, taxTab = NULL, ...){
-
-  .transformation = list(method = "none", mu_X = list(), sd_X = list())
+                                taxLevel = NULL, taxTab = NULL,
+                                standardize = TRUE, ...){
 
   if(is.data.frame(Microbiome) || is.matrix(Microbiome)){
     Microbiome = list(as.matrix(Microbiome))
@@ -185,11 +200,41 @@ NEMoE_buildFromList <- function(Microbiome, Nutrition, Response,
     K = 2
   }
 
+  id0 <- list()
+  for(i in 1:L){
+    M_temp <- filterComp(Microbiome[[i]], var, 1e-9, TRUE)
+    Microbiome[[i]] <- M_temp$X
+    id0[[i]] = as.logical(M_temp$id)
+    names(id0[[i]]) <- colnames(Microbiome[[i]])
+  }
+
+  if(standardize){
+
+    .transformation = list(method = "scale", mu_X = list(), sd_X = list(),
+                           mu_Z = c(), sd_Z = c())
+
+    Nutrition <- scale(Nutrition)
+    .transformation$mu_Z <- attr(Nutrition,"scaled:center")
+    .transformation$sd_Z <- attr(Nutrition,"scaled:scale")
+
+    for(i in 1:L){
+      Microbiome[[i]] <- scale(Microbiome[[i]])
+      .transformation$mu_X[[i]] = attr(Microbiome[[i]], "scaled:center")
+      .transformation$sd_X[[i]] = attr(Microbiome[[i]], "scaled:scale")
+    }
+    .transformation$keepid = id0
+
+  }else{
+    .transformation = list(method = "none", mu_X = list(), sd_X = list(),
+                           mu_Z = c(), sd_Z = c(), keepid = id0)
+  }
+
   NEMoE = .NEMoE(Microbiome = Microbiome, Nutrition = Nutrition,
                  Response = Response, params = params,
                  cvParams = cvParams, K = K, taxLevel = taxLevel,
                  taxTab = taxTab, ResponseLevel = ResponseLevel,
-                 .transformation = .transformation)
+                 .transformation = .transformation, standardize = standardize)
+
   return(NEMoE)
 
 }

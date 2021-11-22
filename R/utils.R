@@ -46,6 +46,8 @@ psGather <- function(ps, tax_list = c("Phylum","Order","Family","Genus","ASV"),
 
     if(prop_trans){
       ps_temp <- phyloseq::transform_sample_counts(ps, function(x){x / sum(x)})
+    }else{
+      ps_temp <- ps
     }
 
     gen_name <- ps_temp@tax_table[,6]
@@ -75,7 +77,7 @@ psGather <- function(ps, tax_list = c("Phylum","Order","Family","Genus","ASV"),
 #' @return A matrix of transformed data.
 #' @export
 
-compTransform <- function(X, eps = 1e-4, method = "comp", scale = T){
+compTransform <- function(X, eps = 1e-4, method = "comp", scale = F){
 
   if(method == "clr"){
 
@@ -91,6 +93,7 @@ compTransform <- function(X, eps = 1e-4, method = "comp", scale = T){
   }else if(method == "none"){
 
     X_trans <- X
+
   }else{
 
     X_trans <- X/rowSums(X)
@@ -103,15 +106,24 @@ compTransform <- function(X, eps = 1e-4, method = "comp", scale = T){
   return(X_trans)
 }
 
-# Filter the composition matrix
+#' Filter the composition matrix
+#' @param X the matrix input to filter
+#' @param thresh_func a function to calculate statistics for filtering.
+#'  By default is variance.
+#' @param thresh If the statistics of variable smaller than threshold,
+#' the corresponding variable will filter out. By default is 1e-4.
+#' @param id_out Whether output the id of variable kept in final output.
+#' @return A list of filtered data and/or index.
+#' @export
 #' @importFrom stats var
-.filterComp <- function(X, thresh_func = var, thresh = 1e-4, id_out = FALSE){
+filterComp <- function(X, thresh_func = var, thresh = 1e-4, id_out = FALSE){
 
   X <- as.matrix(X)
 
   X_stat <- apply(X, 2, thresh_func)
 
-  id <- which(X_stat > thresh)
+  id <- X_stat > thresh
+  names(id) <- colnames(X)
 
   X <- X[, (X_stat > thresh)]
 
@@ -390,4 +402,63 @@ cvtLabel <- function(prob, idx = FALSE){
 
 .sample_data <- function(ps){
   return(phyloseq::sample_data(ps))
+}
+
+.scale_back <- function(NEMoE){
+
+  L <- length(NEMoE@Microbiome)
+
+  .transformation <- NEMoE@.transformation
+  NEMoE_result <- NEMoE@NEMoE_output
+  beta = NEMoE_result$beta
+  gamma = NEMoE_result$gamma
+  Z_sd <- .transformation$sd_Z
+  Z_mu <- .transformation$mu_Z
+  gamma[2:nrow(gamma),] = gamma[2:nrow(gamma),]/Z_sd
+  gamma[1,] = gamma[1,] - colSums((Z_mu * gamma[2:nrow(gamma), ]))
+
+  X_mu <- .transformation$mu_X
+  X_sd <- .transformation$sd_X
+
+  for(i in 1:L){
+    beta_temp = beta[[i]]
+    beta_temp[2:nrow(beta_temp),] = beta_temp[2:nrow(beta_temp),]/X_sd[[i]]
+    beta_temp[1,] = beta_temp[1,] -
+      colSums((X_mu[[i]]*beta_temp[2:nrow(beta_temp),]))
+    beta[[i]] = beta_temp
+  }
+  NEMoE_result$beta = beta
+  NEMoE_result$gamma = gamma
+  NEMoE@NEMoE_output <- NEMoE_result
+
+  return(NEMoE)
+}
+
+.trace_filt <- function(NEMoE){
+
+  L <- length(NEMoE@Microbiome)
+  K <- NEMoE@K
+
+  beta <- list()
+
+  id0 <- NEMoE@.transformation$keepid
+  p_list <- sapply(id0, length)
+  beta0 <- NEMoE@NEMoE_output$beta
+ for(i in 1:L){
+
+    idx_temp <- unname(c(TRUE,id0[[i]]))
+    names_temp <- names(id0[[i]])
+    if(is.null(names_temp)){
+      names_temp <- paste("V",idx_temp, sep = "")
+    }
+    names_temp <- c("intercept",names_temp)
+
+    beta_temp <- matrix(0, nrow = (p_list[i] + 1), ncol = K)
+    beta_temp[as.logical(idx_temp),] = beta0[[i]]
+    rownames(beta_temp) <- names_temp
+    beta[[i]] <- beta_temp
+ }
+  names(beta) <- names(beta0)
+  NEMoE@NEMoE_output$beta = beta
+  return(NEMoE)
 }

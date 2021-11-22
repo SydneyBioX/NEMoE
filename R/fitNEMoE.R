@@ -128,8 +128,6 @@
     LL_temp = LL_temp[1,,drop = F]
   }
 
-  latent <- calcProb(Z_1, gamma_fit)
-  latent <- .onehot(latent)
   return(list(beta = beta_fit, gamma = gamma_fit, r_i = r_i, pen_fac = pen_fac,
               LL = LL_temp))
 }
@@ -145,34 +143,11 @@
   Z = NEMoE@Nutrition
   y = NEMoE@Response
 
-  Z_mu = colMeans(Z)
-  Z_sd = .colSds(Z)
-  X_mu = lapply(X_list, colMeans)
-  X_sd = lapply(X_list, .colSds)
-
-  Z_s = scale(Z)
-  X_s = lapply(X_list, scale)
-
   NEMoE_result = do.call(.fitNEMoE0,
-                         c(list(X_list = X_s, Z= Z_s, y = y, K = NEMoE@K,
+                         c(list(X_list = X_list, Z= Z, y = y, K = NEMoE@K,
                                 beta_init = beta_init, gamma_init = gamma_init),
                            NEMoE@params))
 
-  beta = NEMoE_result$beta
-  gamma = NEMoE_result$gamma
-  gamma[2:nrow(gamma),] = gamma[2:nrow(gamma),]/Z_sd
-  gamma[1,] = gamma[1,] - colSums((Z_mu * gamma[2:nrow(gamma), ])/Z_sd)
-
-  L <- length(X_list)
-  for(i in 1:L){
-    beta_temp = beta[[i]]
-    beta_temp[2:nrow(beta_temp),] = beta_temp[2:nrow(beta_temp),]/X_sd[[i]]
-    beta_temp[1,] = beta_temp[1,] -
-      colSums((X_mu[[i]]*beta_temp[2:nrow(beta_temp),]))
-    beta[[i]] = beta_temp
-  }
-  NEMoE_result$beta = beta
-  NEMoE_result$gamma = gamma
   NEMoE@NEMoE_output = NEMoE_result
 
   return(NEMoE)
@@ -230,7 +205,6 @@ fitNEMoE = function(NEMoE, beta_init = NULL, gamma_init = NULL,
                     ...){
 
 
-
   K <- NEMoE@K
   if(!(is.null(beta_init) & is.null(gamma_init))){
 
@@ -286,11 +260,20 @@ fitNEMoE = function(NEMoE, beta_init = NULL, gamma_init = NULL,
     beta_init = restart_res[[idx]]$beta
     gamma_init = restart_res[[idx]]$gamma
 
-    return(.fitNEMoE(NEMoE, beta_init = beta_init, gamma_init = gamma_init))
-
+    NEMoE <- .fitNEMoE(NEMoE, beta_init = beta_init, gamma_init = gamma_init)
 
   }else{
-    return(.fitNEMoE(NEMoE, beta_init = beta_init, gamma_init = gamma_init))
+
+    NEMoE <- .fitNEMoE(NEMoE, beta_init = beta_init, gamma_init = gamma_init)
+
   }
 
+  if(NEMoE@standardize){
+    NEMoE <- .scale_back(NEMoE)
+  }
+
+  # Traceback unfiltered coefficient
+  NEMoE <- .trace_filt(NEMoE)
+
+  return(NEMoE)
 }

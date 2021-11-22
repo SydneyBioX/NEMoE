@@ -15,8 +15,8 @@ NEMoE_buildFromPhyloseq(
   cvParams = list(),
   taxLevel = NULL,
   taxTab = NULL,
-  ...,
-  TSS = T
+  standardize = TRUE,
+  ...
 )
 }
 \arguments{
@@ -44,10 +44,11 @@ See \code{\link{compTransform}}.}
 
 \item{taxTab}{A dataframe of taxonomic table.}
 
+\item{standardize}{Logical flag for x variable standardization.
+Default is standardize=TRUE.}
+
 \item{...}{Other parameters can pass to NEMoE_buildFromPhyloseq.
 See \code{\link{createParameterList}}}
-
-\item{TSS}{A logical variable indicate whether use TSS normalization.}
 }
 \value{
 A NEMoE object.

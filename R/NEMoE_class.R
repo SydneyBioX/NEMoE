@@ -54,6 +54,7 @@ setClassUnion("listORNULL", c("list", "NULL"))
 #' @slot NEMoE_output A list NEMoE fitting result.
 #' @slot taxLevel A character indicates selected taxa level.
 #' @slot ResponseLevel A character indicates levels of response variables.
+#' @slot standardize A Logical variable indicate whether standardize input data.
 #' @importFrom methods new
 .NEMoE <- setClass("NEMoE",
                    slots = c(Microbiome = "list",
@@ -67,6 +68,7 @@ setClassUnion("listORNULL", c("list", "NULL"))
                              taxLevel = "characterORNULL",
                              taxTab = "data.frameORNULL",
                              ResponseLevel = "characterORNULL",
+                             standardize = "logical",
                              .transformation = "listORNULL"
                              ),
                    prototype = list(

@@ -32,5 +32,7 @@ of fitting NEMoE.}
 \item{\code{taxLevel}}{A character indicates selected taxa level.}
 
 \item{\code{ResponseLevel}}{A character indicates levels of response variables.}
+
+\item{\code{standardize}}{A Logical variable indicate whether standardize input data.}
 }}
 
