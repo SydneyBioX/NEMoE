@@ -130,11 +130,11 @@ NEMoE_buildFromPhyloseq <- function(ps, Nutrition, Response, K = NULL,
     .transformation$keepid = id0
   }
 
-  NEMoE = .NEMoE(Microbiome = Microbiome, Nutrition = Nutrition,
-                 Response = Response, params = params,
-                 cvParams = cvParams, K = K, taxLevel = taxLevel,
-                 taxTab = taxTab, ResponseLevel = ResponseLevel,
-                 .transformation = .transformation, standardize = standardize)
+  NEMoE = NEMoE_class(Microbiome = Microbiome, Nutrition = Nutrition,
+                      Response = Response, params = params,
+                      cvParams = cvParams, K = K, taxLevel = taxLevel,
+                      taxTab = taxTab, ResponseLevel = ResponseLevel,
+                      .transformation = .transformation, standardize = standardize)
 
   return(NEMoE)
 
@@ -229,11 +229,11 @@ NEMoE_buildFromList <- function(Microbiome, Nutrition, Response,
                            mu_Z = c(), sd_Z = c(), keepid = id0)
   }
 
-  NEMoE = .NEMoE(Microbiome = Microbiome, Nutrition = Nutrition,
-                 Response = Response, params = params,
-                 cvParams = cvParams, K = K, taxLevel = taxLevel,
-                 taxTab = taxTab, ResponseLevel = ResponseLevel,
-                 .transformation = .transformation, standardize = standardize)
+  NEMoE = NEMoE_class(Microbiome = Microbiome, Nutrition = Nutrition,
+                      Response = Response, params = params,
+                      cvParams = cvParams, K = K, taxLevel = taxLevel,
+                      taxTab = taxTab, ResponseLevel = ResponseLevel,
+                      .transformation = .transformation, standardize = standardize)
 
   return(NEMoE)
 
