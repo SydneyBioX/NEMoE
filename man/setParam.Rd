@@ -4,10 +4,10 @@
 \alias{setParam}
 \title{Set parameters of fitting NEMoE object}
 \usage{
-setParam(NEMoE, ...)
+setParam(NEMoE_obj, ...)
 }
 \arguments{
-\item{NEMoE}{A NEMoE object.}
+\item{NEMoE_obj}{A NEMoE object.}
 
 \item{...}{Other parameters can pass to setParam.}
 }

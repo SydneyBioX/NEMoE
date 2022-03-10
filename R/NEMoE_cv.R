@@ -3,7 +3,7 @@
 ###################################################################
 #' Make predictions from a fitted "NEMoE" object.
 #' @description This function predict new data using.
-#' @param NEMoE A NEMoE object with fitted parameters.
+#' @param NEMoE_obj A NEMoE_obj object with fitted parameters.
 #' @param X_new A list of transformed microbiome data.
 #' @param Z_new A matrix of transformed nutrition data.
 #' @param full Whether output the result in both gating network
@@ -15,7 +15,7 @@
 #' @useDynLib NEMoE
 #' @export
 
-NEMoE_predict <- function(NEMoE, X_new, Z_new = NULL,
+NEMoE_predict <- function(NEMoE_obj, X_new, Z_new = NULL,
                           full = TRUE, level = "all",
                           transform = TRUE,
                           name_match = FALSE){
@@ -29,19 +29,19 @@ NEMoE_predict <- function(NEMoE, X_new, Z_new = NULL,
       Z_new = as.matrix(Z_new)
     }
   }
-  K <- NEMoE@K
-  beta <- NEMoE@NEMoE_output$beta
-  gamma <- NEMoE@NEMoE_output$gamma
+  K <- NEMoE_obj@K
+  beta <- NEMoE_obj@NEMoE_output$beta
+  gamma <- NEMoE_obj@NEMoE_output$gamma
   L <- length(beta)
   n <- nrow(X_new[[1]])
-  .transformation = NEMoE@.transformation
+  .transformation = NEMoE_obj@.transformation
   method = .transformation$method
 
   if(is.null(Z_new)){
     probs = rep(1/K, K)
   }else{
     if(name_match){
-      Z_new <- .mathcNEMoE(NEMoE@Nutrition, Z_new)
+      Z_new <- .mathcNEMoE(NEMoE_obj@Nutrition, Z_new)
     }
 
     Z1 = cbind(rep(1,n), Z_new)
@@ -54,7 +54,7 @@ NEMoE_predict <- function(NEMoE, X_new, Z_new = NULL,
     for(i in 1:L){
       X_temp <- X_new[[i]]
       if(name_match){
-        X_temp <- .mathcNEMoE(NEMoE@Microbiome[[i]], X_temp)
+        X_temp <- .mathcNEMoE(NEMoE_obj@Microbiome[[i]], X_temp)
       }
       if(transform){
         X_temp <- compTransform(X_temp, method = method, scale = F)
@@ -65,14 +65,14 @@ NEMoE_predict <- function(NEMoE, X_new, Z_new = NULL,
       probs_sub[[i]] <- probs_temp
       y[,i] = rowSums(probs_temp*probs)
     }
-    names(probs_sub) = names(NEMoE@taxLevel)
+    names(probs_sub) = names(NEMoE_obj@taxLevel)
 
   }else{
     y = matrix(0, nrow = n, ncol = 1)
     beta_i = beta[[level]]
     X_temp <- X_new[[1]]
     if(name_match){
-      X_temp <- .mathcNEMoE(NEMoE@Microbiome[[level]], X_temp)
+      X_temp <- .mathcNEMoE(NEMoE_obj@Microbiome[[level]], X_temp)
     }
     if(transform){
       X_temp <- compTransform(X_temp, method = method, scale = F)
@@ -92,19 +92,19 @@ NEMoE_predict <- function(NEMoE, X_new, Z_new = NULL,
   }
 }
 
-.lambda1Generator <- function(NEMoE, lambda2, itmax = 5){
+.lambda1Generator <- function(NEMoE_obj, lambda2, itmax = 5){
 
-  L = length(NEMoE@Microbiome)
-  y <- NEMoE@Response
-  NEMoE_temp = NEMoE
+  L = length(NEMoE_obj@Microbiome)
+  y <- NEMoE_obj@Response
+  NEMoE_temp = NEMoE_obj
   NEMoE_temp@params$lambda2 = lambda2
-  gamma_init = NEMoE@NEMoE_output$gamma
+  gamma_init = NEMoE_obj@NEMoE_output$gamma
   NEMoE_temp@params$verbose = F
   lambda1_M = c()
   for(i in 1:L){
-    lambda1_max = max(abs(stats::cor(NEMoE@Microbiome[[i]], y)))
+    lambda1_max = max(abs(stats::cor(NEMoE_obj@Microbiome[[i]], y)))
     repeat{
-      NEMoE_temp@Microbiome = list(NEMoE@Microbiome[[i]])
+      NEMoE_temp@Microbiome = list(NEMoE_obj@Microbiome[[i]])
       NEMoE_temp@params$lambda1 = lambda1_max
       NEMoE_temp@params$itmax = itmax
       NEMoE_temp = .fitNEMoE(NEMoE_temp, beta_init = NULL, gamma_init = gamma_init)
@@ -137,7 +137,7 @@ NEMoE_predict <- function(NEMoE, X_new, Z_new = NULL,
 #' @seealso \code{\link{createCVList}}
 
 
-calcCriterion <- function(NEMoE, crit_list= c("AIC", "BIC", "ICL1"),
+calcCriterion <- function(NEMoE_obj, crit_list= c("AIC", "BIC", "ICL1"),
                           ...){
 
   f_AIC <- .NEMoE_AIC
@@ -170,14 +170,14 @@ calcCriterion <- function(NEMoE, crit_list= c("AIC", "BIC", "ICL1"),
   result_stat <- c()
   if(length(stat_sel)){
     for(i in 1:length(stat_sel)){
-      result_stat[i] <- f_stat[[i]](NEMoE)
+      result_stat[i] <- f_stat[[i]](NEMoE_obj)
     }
   }
   names(result_stat) <- stat_sel
 
   result_cv_m <- c()
   if(length(cv_sel)){
-    result_cv <- .NEMoE_cv(NEMoE, crit_list = cv_sel, ...)
+    result_cv <- .NEMoE_cv(NEMoE_obj, crit_list = cv_sel, ...)
     result_cv_m <- colMeans(result_cv)
   }
 
@@ -187,25 +187,25 @@ calcCriterion <- function(NEMoE, crit_list= c("AIC", "BIC", "ICL1"),
   return(result)
 }
 
-.cvNEMoE <- function(NEMoE, g1 = 10, itmax_lambda = 3,
+.cvNEMoE <- function(NEMoE_obj, g1 = 10, itmax_lambda = 3,
                     itmax_fit = 50, itmax_cv = 20,
                     crit_list = c("all"),
                     lambda1_M = NULL, ...){
 
-  L <- length(NEMoE@Microbiome)
-  p_L <- sapply(NEMoE@Microbiome, ncol)
-  n <- nrow(NEMoE@Nutrition)
-  K <- NEMoE@K
+  L <- length(NEMoE_obj@Microbiome)
+  p_L <- sapply(NEMoE_obj@Microbiome, ncol)
+  n <- nrow(NEMoE_obj@Nutrition)
+  K <- NEMoE_obj@K
 
-  lambda2 = NEMoE@params$lambda2
+  lambda2 = NEMoE_obj@params$lambda2
 
   if(is.null(lambda1_M)){
-    lambda1_M <- .lambda1Generator(NEMoE, lambda2, itmax_lambda)
+    lambda1_M <- .lambda1Generator(NEMoE_obj, lambda2, itmax_lambda)
   }
 
   lambda1_m <- log(p_L)/(K*n)
 
-  gamma_init <- NEMoE@NEMoE_output$gamma
+  gamma_init <- NEMoE_obj@NEMoE_output$gamma
   result = list()
 
   if("all" %in% crit_list){
@@ -219,7 +219,7 @@ calcCriterion <- function(NEMoE, crit_list= c("AIC", "BIC", "ICL1"),
     result_temp <- matrix(0, nrow = g1, ncol = length(crit_list))
     C <- (log(lambda1_M[i]) - log(lambda1_m[i])) / (g1 - 1)
     lambda1_seq <- lambda1_m[i] * exp((seq(1,g1) - 1)*C)
-    NEMoE_temp <- NEMoE
+    NEMoE_temp <- NEMoE_obj
     NEMoE_temp@Microbiome <- list(NEMoE_temp@Microbiome[[i]])
     NEMoE_temp@params$verbose = FALSE
     NEMoE_temp@params$itmax = itmax_fit
@@ -261,7 +261,7 @@ calcCriterion <- function(NEMoE, crit_list= c("AIC", "BIC", "ICL1"),
 ##########################################################################
 #' Parameters tunning in NEMoE
 #' @description This function calculate evaluation of NEMoE object.
-#' @param NEMoE a NEMoE of object without cross validated parameters.
+#' @param NEMoE_obj a NEMoE of object without cross validated parameters.
 #' @param verbose  A logical input indicating whether the intermediate
 #' steps will be printed.
 #' @param ... Other parameters that can be passed to cvNEMoE.
@@ -272,18 +272,18 @@ calcCriterion <- function(NEMoE, crit_list= c("AIC", "BIC", "ICL1"),
 #' @export
 #' @seealso \code{\link{createCVList}}
 
-cvNEMoE <- function(NEMoE, verbose = T, ...){
+cvNEMoE <- function(NEMoE_obj, verbose = T, ...){
 
-  lambda2_seq <- NEMoE@cvParams$lambda2
-  g1 <- NEMoE@cvParams$g1
-  shrink <- NEMoE@cvParams$shrink
-  itmax_cv <- NEMoE@cvParams$itmax_cv
-  itmax_fit <- NEMoE@cvParams$itmax_fit
-  itmax_lambda <- NEMoE@cvParams$itmax_lambda
-  crit_eval <-  NEMoE@cvParams$crit_eval
-  crit_sel <- NEMoE@cvParams$crit_sel
-  track <- NEMoE@cvParams$track
-  gamma_init <- NEMoE@NEMoE_output$gamma
+  lambda2_seq <- NEMoE_obj@cvParams$lambda2
+  g1 <- NEMoE_obj@cvParams$g1
+  shrink <- NEMoE_obj@cvParams$shrink
+  itmax_cv <- NEMoE_obj@cvParams$itmax_cv
+  itmax_fit <- NEMoE_obj@cvParams$itmax_fit
+  itmax_lambda <- NEMoE_obj@cvParams$itmax_lambda
+  crit_eval <-  NEMoE_obj@cvParams$crit_eval
+  crit_sel <- NEMoE_obj@cvParams$crit_sel
+  track <- NEMoE_obj@cvParams$track
+  gamma_init <- NEMoE_obj@NEMoE_output$gamma
 
   if("all" %in% crit_eval){
     crit_eval <- c("AIC", "BIC", "ICL1", "ICL2", "eBIC", "mAIC", "mBIC",
@@ -299,7 +299,7 @@ cvNEMoE <- function(NEMoE, verbose = T, ...){
 
   for(i in 1:length(lambda2_seq)){
     message("Evaluate on lambda2 = ", lambda2_seq[i], ".....")
-    NEMoE_temp <- NEMoE
+    NEMoE_temp <- NEMoE_obj
     NEMoE_temp@params$lambda2 = lambda2_seq[i]
     result_lambda1[[i]] <- .cvNEMoE(NEMoE_temp, g1, itmax_lambda,
                                     itmax_fit, itmax_cv,
@@ -319,7 +319,7 @@ cvNEMoE <- function(NEMoE, verbose = T, ...){
                             beta_init = NULL,
                             gamma_init = gamma_init)
 
-    result_temp <- calcCriterion(NEMoE = NEMoE_temp, crit_list = crit_eval,
+    result_temp <- calcCriterion(NEMoE_obj = NEMoE_temp, crit_list = crit_eval,
                                  itmax = itmax_cv, ...)
 
     result_lambda2[i,] <- result_temp
@@ -349,7 +349,7 @@ cvNEMoE <- function(NEMoE, verbose = T, ...){
                       lambda1_choose = lambda1_choose,
                       lambda2_choose = lambda2_choose)
   }
-  NEMoE@cvResult <- cv_result
+  NEMoE_obj@cvResult <- cv_result
 
-  return(NEMoE)
+  return(NEMoE_obj)
 }

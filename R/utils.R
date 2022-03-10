@@ -167,7 +167,7 @@ filterComp <- function(X, thresh_func = var, thresh = 1e-4, id_out = FALSE){
 
 #' Calculate degree of freedom
 #' @description This function calculate degree of freedom of NEMoE object.
-#' @param NEMoE A NEMoE object with fitted result.
+#' @param NEMoE_obj A NEMoE object with fitted result.
 #' @param output whether degree of freedom with combined
 #'  components or compute within each component.
 #' @return a list of degree of freedom in gating network and experts network.
@@ -176,12 +176,12 @@ filterComp <- function(X, thresh_func = var, thresh = 1e-4, id_out = FALSE){
 #' calcdf(NEMoE_example)
 #' @export
 
-calcdf <- function(NEMoE, output = "all"){
+calcdf <- function(NEMoE_obj, output = "all"){
 
-  K <- NEMoE@K
-  L <- length(NEMoE@Microbiome)
-  gamma <- NEMoE@NEMoE_output$gamma
-  beta <- NEMoE@NEMoE_output$beta
+  K <- NEMoE_obj@K
+  L <- length(NEMoE_obj@Microbiome)
+  gamma <- NEMoE_obj@NEMoE_output$gamma
+  beta <- NEMoE_obj@NEMoE_output$beta
 
   df_gamma <- .calcdf(gamma)
 
@@ -404,12 +404,12 @@ cvtLabel <- function(prob, idx = FALSE){
   return(phyloseq::sample_data(ps))
 }
 
-.scale_back <- function(NEMoE){
+.scale_back <- function(NEMoE_obj){
 
-  L <- length(NEMoE@Microbiome)
+  L <- length(NEMoE_obj@Microbiome)
 
-  .transformation <- NEMoE@.transformation
-  NEMoE_result <- NEMoE@NEMoE_output
+  .transformation <- NEMoE_obj@.transformation
+  NEMoE_result <- NEMoE_obj@NEMoE_output
   beta = NEMoE_result$beta
   gamma = NEMoE_result$gamma
   Z_sd <- .transformation$sd_Z
@@ -429,21 +429,21 @@ cvtLabel <- function(prob, idx = FALSE){
   }
   NEMoE_result$beta = beta
   NEMoE_result$gamma = gamma
-  NEMoE@NEMoE_output <- NEMoE_result
+  NEMoE_obj@NEMoE_output <- NEMoE_result
 
-  return(NEMoE)
+  return(NEMoE_obj)
 }
 
-.trace_filt <- function(NEMoE){
+.trace_filt <- function(NEMoE_obj){
 
-  L <- length(NEMoE@Microbiome)
-  K <- NEMoE@K
+  L <- length(NEMoE_obj@Microbiome)
+  K <- NEMoE_obj@K
 
   beta <- list()
 
-  id0 <- NEMoE@.transformation$keepid
+  id0 <- NEMoE_obj@.transformation$keepid
   p_list <- sapply(id0, length)
-  beta0 <- NEMoE@NEMoE_output$beta
+  beta0 <- NEMoE_obj@NEMoE_output$beta
  for(i in 1:L){
 
     idx_temp <- unname(c(TRUE,id0[[i]]))
@@ -459,6 +459,6 @@ cvtLabel <- function(prob, idx = FALSE){
     beta[[i]] <- beta_temp
  }
   names(beta) <- names(beta0)
-  NEMoE@NEMoE_output$beta = beta
-  return(NEMoE)
+  NEMoE_obj@NEMoE_output$beta = beta
+  return(NEMoE_obj)
 }

@@ -4,10 +4,10 @@
 \alias{plotGating}
 \title{Plot gating network}
 \usage{
-plotGating(NEMoE, PCs = c(1, 2))
+plotGating(NEMoE_obj, PCs = c(1, 2))
 }
 \arguments{
-\item{NEMoE}{a NEMoE object with fitted output.}
+\item{NEMoE_obj}{a NEMoE object with fitted output.}
 
 \item{PCs}{Visualization of selected Principal components.}
 }

@@ -5,7 +5,7 @@
 \title{Fit NEMoE model}
 \usage{
 fitNEMoE(
-  NEMoE,
+  NEMoE_obj,
   beta_init = NULL,
   gamma_init = NULL,
   num_restart = 5,
@@ -15,7 +15,7 @@ fitNEMoE(
 )
 }
 \arguments{
-\item{NEMoE}{a NEMoE object contain data and parameters for fitting.}
+\item{NEMoE_obj}{a NEMoE object contain data and parameters for fitting.}
 
 \item{beta_init}{initial values of parameters in experts network.}
 

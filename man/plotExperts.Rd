@@ -4,10 +4,10 @@
 \alias{plotExperts}
 \title{Plot experts network}
 \usage{
-plotExperts(NEMoE)
+plotExperts(NEMoE_obj)
 }
 \arguments{
-\item{NEMoE}{a NEMoE object with fitted output.}
+\item{NEMoE_obj}{a NEMoE object with fitted output.}
 }
 \value{
 A list of graph of fitted coefficients of each latent class

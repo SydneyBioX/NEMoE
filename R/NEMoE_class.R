@@ -56,7 +56,7 @@ setClassUnion("listORNULL", c("list", "NULL"))
 #' @slot ResponseLevel A character indicates levels of response variables.
 #' @slot standardize A Logical variable indicate whether standardize input data.
 #' @importFrom methods new
-NEMoE_class <- setClass("NEMoE",
+NEMoE <- setClass("NEMoE",
                    slots = c(Microbiome = "list",
                              Nutrition = "matrix",
                              Response = "vector",

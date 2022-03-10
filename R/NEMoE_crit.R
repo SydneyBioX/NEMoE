@@ -2,10 +2,10 @@
 # function to calculate AIC of NEMoE fitting result
 ###################################################################
 
-.NEMoE_AIC <- function(NEMoE, modified = FALSE, LL = "obs"){
+.NEMoE_AIC <- function(NEMoE_obj, modified = FALSE, LL = "obs"){
 
-  K <- NEMoE@K
-  LL_out <- NEMoE@NEMoE_output$LL
+  K <- NEMoE_obj@K
+  LL_out <- NEMoE_obj@NEMoE_output$LL
 
   if(LL == "comp"){
     LogLikeli <- LL_out[nrow(LL_out),3]
@@ -15,14 +15,14 @@
 
   if(modified){
 
-    NEMoE_df = calcdf(NEMoE, output = "comp")
+    NEMoE_df = calcdf(NEMoE_obj, output = "comp")
     df_gamma <- NEMoE_df$df_gamma
     df_beta <- NEMoE_df$df_beta
 
     AIC_est <- (-2*LogLikeli) + 2*(df_gamma + sum(df_beta))
 
   }else{
-    NEMoE_df = calcdf(NEMoE)
+    NEMoE_df = calcdf(NEMoE_obj)
     df_gamma <- NEMoE_df$df_gamma
     df_beta <- NEMoE_df$df_beta
 
@@ -113,26 +113,26 @@
 # function to calculate BIC of NEMoE fitting result
 ###################################################################
 
-.NEMoE_BIC <- function(NEMoE, modified = FALSE, type = "BIC", LL = "obs"){
+.NEMoE_BIC <- function(NEMoE_obj, modified = FALSE, type = "BIC", LL = "obs"){
 
-  K <- NEMoE@K
-  L <- length(NEMoE@Microbiome)
-  LL_out <- NEMoE@NEMoE_output$LL
+  K <- NEMoE_obj@K
+  L <- length(NEMoE_obj@Microbiome)
+  LL_out <- NEMoE_obj@NEMoE_output$LL
   if(LL == "comp"){
     LogLikeli <- LL_out[nrow(LL_out),3]
   }else{
     LogLikeli <- LL_out[nrow(LL_out),1]
   }
-  n <- nrow(NEMoE@Nutrition)
-  Z1 <- cbind(rep(1,n), NEMoE@Nutrition)
-  pi <- calcProb(Z1, NEMoE@NEMoE_output$gamma)
+  n <- nrow(NEMoE_obj@Nutrition)
+  Z1 <- cbind(rep(1,n), NEMoE_obj@Nutrition)
+  pi <- calcProb(Z1, NEMoE_obj@NEMoE_output$gamma)
   pi1 <- colSums(pi)
-  q <- ncol(NEMoE@Nutrition)
-  p_L <- sapply(NEMoE@Microbiome, ncol)
+  q <- ncol(NEMoE_obj@Nutrition)
+  p_L <- sapply(NEMoE_obj@Microbiome, ncol)
 
   if(modified){
 
-    NEMoE_df = calcdf(NEMoE, output = "comp")
+    NEMoE_df = calcdf(NEMoE_obj, output = "comp")
     df_gamma <- NEMoE_df$df_gamma
     df_beta <- NEMoE_df$df_beta
 
@@ -151,7 +151,7 @@
 
   }else{
 
-    NEMoE_df = calcdf(NEMoE)
+    NEMoE_df = calcdf(NEMoE_obj)
     df_gamma <- NEMoE_df$df_gamma
     df_beta <- NEMoE_df$df_beta
 
@@ -169,12 +169,12 @@
 # function to calculate Cross Validation metrics of NEMoE object
 ###################################################################
 
-.NEMoE_cv <- function(NEMoE, crit_list = c("D.square", "accuracy", "auc"),
+.NEMoE_cv <- function(NEMoE_obj, crit_list = c("D.square", "accuracy", "auc"),
                       fold = 5, itmax = 1e2, verbose = F){
 
-  L <- length(NEMoE@Microbiome)
-  q <- ncol(NEMoE@Nutrition)
-  n <- nrow(NEMoE@Nutrition)
+  L <- length(NEMoE_obj@Microbiome)
+  q <- ncol(NEMoE_obj@Nutrition)
+  n <- nrow(NEMoE_obj@Nutrition)
   num_fold <- ceiling(n/fold)
   idx_all <- seq_len(n)
   if("all" %in% crit_list){
@@ -190,18 +190,18 @@
     idx_test <- seq((i - 1)*num_fold + 1, min(n, i*num_fold))
     idx_train <- idx_all[-idx_test]
 
-    Nutrition_sub = NEMoE@Nutrition[idx_train,]
-    Nutrition_test = NEMoE@Nutrition[idx_test,]
+    Nutrition_sub = NEMoE_obj@Nutrition[idx_train,]
+    Nutrition_test = NEMoE_obj@Nutrition[idx_test,]
     Microbiome_sub  = list()
     Microbiome_test = list()
     for(j in 1:L){
-      Microbiome_sub[[j]] = NEMoE@Microbiome[[j]][idx_train,]
-      Microbiome_test[[j]] = NEMoE@Microbiome[[j]][idx_test,]
+      Microbiome_sub[[j]] = NEMoE_obj@Microbiome[[j]][idx_train,]
+      Microbiome_test[[j]] = NEMoE_obj@Microbiome[[j]][idx_test,]
     }
-    Response_sub = NEMoE@Response[idx_train]
-    Response_test = NEMoE@Response[idx_test]
+    Response_sub = NEMoE_obj@Response[idx_train]
+    Response_test = NEMoE_obj@Response[idx_test]
 
-    NEMoE_sub = NEMoE
+    NEMoE_sub = NEMoE_obj
     NEMoE_sub@Nutrition = Nutrition_sub
     NEMoE_sub@Microbiome = Microbiome_sub
     NEMoE_sub@Response = Response_sub

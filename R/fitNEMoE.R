@@ -136,32 +136,32 @@
 # function to fitting NEMoE with different initialization
 ###################################################################
 
-.fitNEMoE <- function(NEMoE, beta_init = NULL, gamma_init = NULL,
+.fitNEMoE <- function(NEMoE_obj, beta_init = NULL, gamma_init = NULL,
                       ...){
 
-  X_list = NEMoE@Microbiome
-  Z = NEMoE@Nutrition
-  y = NEMoE@Response
+  X_list = NEMoE_obj@Microbiome
+  Z = NEMoE_obj@Nutrition
+  y = NEMoE_obj@Response
 
   NEMoE_result = do.call(.fitNEMoE0,
-                         c(list(X_list = X_list, Z= Z, y = y, K = NEMoE@K,
+                         c(list(X_list = X_list, Z= Z, y = y, K = NEMoE_obj@K,
                                 beta_init = beta_init, gamma_init = gamma_init),
-                           NEMoE@params))
+                           NEMoE_obj@params))
 
-  NEMoE@NEMoE_output = NEMoE_result
+  NEMoE_obj@NEMoE_output = NEMoE_result
 
-  return(NEMoE)
+  return(NEMoE_obj)
 }
 
 ###################################################################
-# function to fitting NEMoE used in restart
+# function to fitting NEMoE_obj used in restart
 ###################################################################
 
-.restart_NEMoE <- function(NEMoE){
+.restart_NEMoE <- function(NEMoE_obj){
 
-  NEMoE@params$verbose = F
-  NEMoE = .fitNEMoE(NEMoE)
-  restart_result = NEMoE@NEMoE_output
+  NEMoE_obj@params$verbose = F
+  NEMoE_obj = .fitNEMoE(NEMoE_obj)
+  restart_result = NEMoE_obj@NEMoE_output
   LL_temp =  restart_result$LL[nrow(restart_result$LL),2]
   return(list(beta = restart_result$beta,
               gamma = restart_result$gamma,
@@ -174,7 +174,7 @@
 ###################################################################
 #' Fit NEMoE model
 #' @description This function fit NEMoE model using EM algorithm.
-#' @param NEMoE a NEMoE object contain data and parameters for fitting.
+#' @param NEMoE_obj a NEMoE object contain data and parameters for fitting.
 #' @param gamma_init initial value of parameters in gating network.
 #' @param beta_init initial values of parameters in experts network.
 #' @param BPPARAM A \code{BiocParallelParam} class object from.
@@ -199,25 +199,25 @@
 #' \code{\link{NEMoE_buildFromPhyloseq}}, \code{\link{createParameterList}}
 #' @export
 
-fitNEMoE = function(NEMoE, beta_init = NULL, gamma_init = NULL,
+fitNEMoE = function(NEMoE_obj, beta_init = NULL, gamma_init = NULL,
                     num_restart = 5, restart_it = 10,
                     BPPARAM = BiocParallel::SerialParam(),
                     ...){
 
 
-  K <- NEMoE@K
+  K <- NEMoE_obj@K
   if(!(is.null(beta_init) & is.null(gamma_init))){
 
-    return(.fitNEMoE(NEMoE, beta_init = beta_init, gamma_init = gamma_init))
+    return(.fitNEMoE(NEMoE_obj, beta_init = beta_init, gamma_init = gamma_init))
 
   }else if(num_restart){
 
     km_flag = FALSE
 
-    km_res0 <- stats::kmeans(NEMoE@Nutrition, centers = K)$cluster
+    km_res0 <- stats::kmeans(NEMoE_obj@Nutrition, centers = K)$cluster
     km_ari <- c()
     for(i in 1:num_restart){
-      km_res <- stats::kmeans(NEMoE@Nutrition, centers = K)$cluster
+      km_res <- stats::kmeans(NEMoE_obj@Nutrition, centers = K)$cluster
       km_ari[i] <- mclust::adjustedRandIndex(km_res0, km_res)
     }
 
@@ -225,7 +225,7 @@ fitNEMoE = function(NEMoE, beta_init = NULL, gamma_init = NULL,
       km_flag = TRUE
     }
 
-    NEMoE_restart = NEMoE
+    NEMoE_restart = NEMoE_obj
     if(km_flag){
       NEMoE_restart@params$init = "kmeans"
     }else{
@@ -250,30 +250,30 @@ fitNEMoE = function(NEMoE, beta_init = NULL, gamma_init = NULL,
 
     idx = which.max(PLL_res)
     if(idx == (num_restart + 2)){
-      NEMoE@params$init = "glmnet"
+      NEMoE_obj@params$init = "glmnet"
     }else if(idx == (num_restart + 1)){
-      NEMoE@params$init = "kmeans"
+      NEMoE_obj@params$init = "kmeans"
     }else{
-      NEMoE@params$init = "rand"
+      NEMoE_obj@params$init = "rand"
     }
 
     beta_init = restart_res[[idx]]$beta
     gamma_init = restart_res[[idx]]$gamma
 
-    NEMoE <- .fitNEMoE(NEMoE, beta_init = beta_init, gamma_init = gamma_init)
+    NEMoE_obj <- .fitNEMoE(NEMoE_obj, beta_init = beta_init, gamma_init = gamma_init)
 
   }else{
 
-    NEMoE <- .fitNEMoE(NEMoE, beta_init = beta_init, gamma_init = gamma_init)
+    NEMoE_obj <- .fitNEMoE(NEMoE_obj, beta_init = beta_init, gamma_init = gamma_init)
 
   }
 
-  if(NEMoE@standardize){
-    NEMoE <- .scale_back(NEMoE)
+  if(NEMoE_obj@standardize){
+    NEMoE_obj <- .scale_back(NEMoE_obj)
   }
 
   # Traceback unfiltered coefficient
-  NEMoE <- .trace_filt(NEMoE)
+  NEMoE_obj <- .trace_filt(NEMoE_obj)
 
-  return(NEMoE)
+  return(NEMoE_obj)
 }

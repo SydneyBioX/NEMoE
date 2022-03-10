@@ -130,13 +130,13 @@ NEMoE_buildFromPhyloseq <- function(ps, Nutrition, Response, K = NULL,
     .transformation$keepid = id0
   }
 
-  NEMoE = NEMoE_class(Microbiome = Microbiome, Nutrition = Nutrition,
+  NEMoE_obj = NEMoE(Microbiome = Microbiome, Nutrition = Nutrition,
                       Response = Response, params = params,
                       cvParams = cvParams, K = K, taxLevel = taxLevel,
                       taxTab = taxTab, ResponseLevel = ResponseLevel,
                       .transformation = .transformation, standardize = standardize)
 
-  return(NEMoE)
+  return(NEMoE_obj)
 
 }
 
@@ -229,13 +229,13 @@ NEMoE_buildFromList <- function(Microbiome, Nutrition, Response,
                            mu_Z = c(), sd_Z = c(), keepid = id0)
   }
 
-  NEMoE = NEMoE_class(Microbiome = Microbiome, Nutrition = Nutrition,
-                      Response = Response, params = params,
-                      cvParams = cvParams, K = K, taxLevel = taxLevel,
-                      taxTab = taxTab, ResponseLevel = ResponseLevel,
-                      .transformation = .transformation, standardize = standardize)
+  NEMoE_obj = NEMoE(Microbiome = Microbiome, Nutrition = Nutrition,
+                    Response = Response, params = params,
+                    cvParams = cvParams, K = K, taxLevel = taxLevel,
+                    taxTab = taxTab, ResponseLevel = ResponseLevel,
+                    .transformation = .transformation, standardize = standardize)
 
-  return(NEMoE)
+  return(NEMoE_obj)
 
 }
 
@@ -346,7 +346,7 @@ createCVList <- function(g1 = 10,
 ###################################################################
 #' Set parameters of fitting NEMoE object
 #' @description This function set parameters in NEMoE object.
-#' @param NEMoE A NEMoE object.
+#' @param NEMoE_obj A NEMoE object.
 #' @param ... Other parameters can pass to setParam.
 #'
 #' @return A NEMoE with user input parameters.
@@ -356,12 +356,12 @@ createCVList <- function(g1 = 10,
 #' @export
 #' @seealso \code{\link{createParameterList}}
 
-setParam <- function(NEMoE, ...){
+setParam <- function(NEMoE_obj, ...){
 
   params <- createParameterList(...)
-  NEMoE@params <- params
+  NEMoE_obj@params <- params
 
-  return(NEMoE)
+  return(NEMoE_obj)
 
 }
 
@@ -370,16 +370,16 @@ setParam <- function(NEMoE, ...){
 ###################################################################
 #' Get coefficients of fitted NEMoE object
 #' @description This function get coefficients in NEMoE object.
-#' @param NEMoE A NEMoE object.
+#' @param NEMoE_obj A NEMoE object.
 #'
 #' @return A list contain fitted result.
 #' @export
 #' @seealso \code{\link{fitNEMoE}}
 
-getCoef <- function(NEMoE){
+getCoef <- function(NEMoE_obj){
 
-  gating <- NEMoE@NEMoE_output$gamma
-  experts <- NEMoE@NEMoE_output$beta
+  gating <- NEMoE_obj@NEMoE_output$gamma
+  experts <- NEMoE_obj@NEMoE_output$beta
 
   return(list(coef.gating = gating, coef.experts = experts))
 
@@ -391,14 +391,14 @@ getCoef <- function(NEMoE){
 ###################################################################
 #' Get Likelihood of fitted NEMoE object
 #' @description This function get Likelihood result in NEMoE object.
-#' @param NEMoE A NEMoE object.
+#' @param NEMoE_obj A NEMoE object.
 #'
 #' @return A dataframe contain fitted result.
 #' @export
 #' @seealso \code{\link{fitNEMoE}}
 
-getLL <- function(NEMoE){
+getLL <- function(NEMoE_obj){
 
-  return(NEMoE@NEMoE_output$LL)
+  return(NEMoE_obj@NEMoE_output$LL)
 
 }

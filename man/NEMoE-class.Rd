@@ -3,7 +3,7 @@
 \docType{class}
 \name{NEMoE-class}
 \alias{NEMoE-class}
-\alias{.NEMoE}
+\alias{NEMoE}
 \title{NEMoE class}
 \description{
 NEMoE class

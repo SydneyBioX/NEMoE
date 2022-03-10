@@ -4,10 +4,10 @@
 \alias{cvNEMoE}
 \title{Parameters tunning in NEMoE}
 \usage{
-cvNEMoE(NEMoE, verbose = T, ...)
+cvNEMoE(NEMoE_obj, verbose = T, ...)
 }
 \arguments{
-\item{NEMoE}{a NEMoE of object without cross validated parameters.}
+\item{NEMoE_obj}{a NEMoE of object without cross validated parameters.}
 
 \item{verbose}{A logical input indicating whether the intermediate
 steps will be printed.}

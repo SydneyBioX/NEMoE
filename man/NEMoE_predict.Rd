@@ -5,7 +5,7 @@
 \title{Make predictions from a fitted "NEMoE" object.}
 \usage{
 NEMoE_predict(
-  NEMoE,
+  NEMoE_obj,
   X_new,
   Z_new = NULL,
   full = TRUE,
@@ -15,7 +15,7 @@ NEMoE_predict(
 )
 }
 \arguments{
-\item{NEMoE}{A NEMoE object with fitted parameters.}
+\item{NEMoE_obj}{A NEMoE_obj object with fitted parameters.}
 
 \item{X_new}{A list of transformed microbiome data.}
 

@@ -4,10 +4,10 @@
 \alias{calcdf}
 \title{Calculate degree of freedom}
 \usage{
-calcdf(NEMoE, output = "all")
+calcdf(NEMoE_obj, output = "all")
 }
 \arguments{
-\item{NEMoE}{A NEMoE object with fitted result.}
+\item{NEMoE_obj}{A NEMoE object with fitted result.}
 
 \item{output}{whether degree of freedom with combined
 components or compute within each component.}

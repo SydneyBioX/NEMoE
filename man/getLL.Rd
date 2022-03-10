@@ -4,10 +4,10 @@
 \alias{getLL}
 \title{Get Likelihood of fitted NEMoE object}
 \usage{
-getLL(NEMoE)
+getLL(NEMoE_obj)
 }
 \arguments{
-\item{NEMoE}{A NEMoE object.}
+\item{NEMoE_obj}{A NEMoE object.}
 }
 \value{
 A dataframe contain fitted result.

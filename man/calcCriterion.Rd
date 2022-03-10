@@ -4,14 +4,14 @@
 \alias{calcCriterion}
 \title{Evaluate fitted NEMoE obejct}
 \usage{
-calcCriterion(NEMoE, crit_list = c("AIC", "BIC", "ICL1"), ...)
+calcCriterion(NEMoE_obj, crit_list = c("AIC", "BIC", "ICL1"), ...)
 }
 \arguments{
-\item{NEMoE}{a NEMoE of object with fitted parameters.}
-
 \item{crit_list}{a list of evaluation metric.}
 
 \item{...}{other parameters can be put into calcCriterion.}
+
+\item{NEMoE}{a NEMoE of object with fitted parameters.}
 }
 \value{
 A vector of evaluation result.

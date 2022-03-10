@@ -4,10 +4,10 @@
 \alias{getCoef}
 \title{Get coefficients of fitted NEMoE object}
 \usage{
-getCoef(NEMoE)
+getCoef(NEMoE_obj)
 }
 \arguments{
-\item{NEMoE}{A NEMoE object.}
+\item{NEMoE_obj}{A NEMoE object.}
 }
 \value{
 A list contain fitted result.

@@ -4,7 +4,7 @@
 #' Plot gating network
 #' @description This function plot the PCA of fitted latent class
 #' and their corresponding loadings.
-#' @param NEMoE a NEMoE object with fitted output.
+#' @param NEMoE_obj a NEMoE object with fitted output.
 #' @param PCs Visualization of selected Principal components.
 #' @return A graph of PCA plot of nutrition intake and estimated latent classes
 #' and its corresponding loadings.
@@ -15,14 +15,14 @@
 #' plotGating(NEMoE_example)
 #' @export
 
-plotGating <- function(NEMoE, PCs = c(1,2)){
-  if(!length(NEMoE@NEMoE_output)){
+plotGating <- function(NEMoE_obj, PCs = c(1,2)){
+  if(!length(NEMoE_obj@NEMoE_output)){
     error <- "Please fitting NEMoE before plot."
     return(TRUE)
   }
 
-  gamma <- NEMoE@NEMoE_output$gamma
-  y <- as.factor(NEMoE@Response)
+  gamma <- NEMoE_obj@NEMoE_output$gamma
+  y <- as.factor(NEMoE_obj@Response)
 
   colnames(gamma) <- paste("latent",1:ncol(gamma), sep = "")
   gamma_df <- as.data.frame(gamma)
@@ -31,7 +31,7 @@ plotGating <- function(NEMoE, PCs = c(1,2)){
   gamma_df_melt = reshape2::melt(gamma_df, id.vars = "var_name")
   colnames(gamma_df_melt)[2] = "latent"
 
-  Z <- NEMoE@Nutrition
+  Z <- NEMoE_obj@Nutrition
   n <- nrow(Z)
   Z1 <- cbind(rep(1,n), Z)
   latent <- calcProb(Z1, gamma)
@@ -58,7 +58,7 @@ plotGating <- function(NEMoE, PCs = c(1,2)){
 #' Plot experts network
 #' @description This function plot the estimated coefficients of each latent class
 #' on each level.
-#' @param NEMoE a NEMoE object with fitted output.
+#' @param NEMoE_obj a NEMoE object with fitted output.
 #' @return A list of graph of fitted coefficients of each latent class
 #' on each level.
 #' @import ggplot2
@@ -69,9 +69,9 @@ plotGating <- function(NEMoE, PCs = c(1,2)){
 
 #' @export
 
-plotExperts <- function(NEMoE){
+plotExperts <- function(NEMoE_obj){
 
-  beta = NEMoE@NEMoE_output$beta
+  beta = NEMoE_obj@NEMoE_output$beta
   L <- length(beta)
   p_list = list()
   for(i in 1:L){
