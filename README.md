@@ -1,6 +1,6 @@
 # NEMoE <img src='inst/figures/NEMoE.png' align="right" height="138.5" />
 
-NEMoE is an R package modelling A nutrition aware regularized mixture of experts model addressing diet cohort heterogeneity of gut microbiome in certain disease. Also can be viewed as regularized mixture of experts models with the elastic penalty and binary output. The input can be single-level or multi-level.
+NEMoE is an R package implementing a nutrition-aware regularized mixture of experts model, which addresses diet cohort heterogeneity of gut microbiome in certain diseases. Additionally, the implementation can be viewed as a regularized mixture of experts model with an elastic penalty and a binary output. The input can be single-level or multi-level.
 
 ## Installation
 
