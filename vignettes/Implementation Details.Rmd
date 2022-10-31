@@ -1,0 +1,167 @@
+---
+title: "Implementation details"
+output: 
+  rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{NEMoE}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: references.bib
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  comment = "#>"
+)
+```
+
+# NEMoE algorithm
+
+The implementation of NEMoE involves the EM algorithm, a special case of the Minorise-Maximisation (MM) algorithm[@hunter2004tutorial] and widely used in estimating parameters for finite mixture models. By alternatively inferring the latent variables given the parameters (E steps), and then optimising the parameters given the ``filled in'' data, the EM algorithm iteratively finds an appropriate local maximiser of the log-likelihood function.
+
+In this section, we introduce the implementation of NEMoE. We first describe the EM algorithm parameters estimation for RMoE, and then introduce the EM algorithm for NEMoE. To achieve robust parameter estimation, we use three different strategies for initialisation. We also implement different variants of the EM algorithm to suit different scales of the problem. Finally, the selection of the tuning parameter in NEMoE is also introduced.  
+
+For a transformed microbiome data at taxonomic level $l$, we use the matrix $X_{n \times p_l^{(l)}}$to denote the relative abundance of $n$ samples of $p_l$ taxa. The corresponding diet information, measured as a nutrients intake matrix, is denoted as $W_{n \times q}$, where the $q$ columns are the nutrient metrics for the same $n$ samples. Let $Y_n$ denote the binary response of the health outcome, with $Y=1$ and $Y=0$ representing individuals with and without disease, respectively. NEMoE models the heterogeneous relationship between the microbiome and the health outcome by a mixture distribution, i.e.
+
+\begin{equation}\label{gating}
+    \operatorname{P}_l(Y=1|X^{(l)},W)=\sum_{k=1}^K \pi_k \frac{\exp(X^{(l)} \beta_k^{(l)})}{1 + \exp(X^{(l)} \beta_k^{(l)})},
+\end{equation}
+where $\pi_k= \frac{\exp(W \gamma_k)}{\sum_{i = 1}^K \exp(W \gamma_i)}$ is the nutrition class mixing weight of shared components determined by nutrients intake, and where $\beta_k^{(l)}$ and $\gamma_k$ are the corresponding effect size for the gating network and the experts network, respectively, and $K$ denotes the predetermined number of nutrition classes. 
+NEMoE estimates the regularised sum of all levels of the log-likelihood (LL) function, where the regularisation term consists of elastic net penalties for both the gating network and the experts network:
+\begin{equation}\label{LL}
+    \operatorname{rLL}=\sum_{l=1}^L\sum_{k=1}^K\{\sum_{i=1}^n \operatorname{log}[P(Y_i|X_i^{(l)}, W_i)] - \phi(\lambda_{1k}^{(l)},\alpha_{1k}^{(l)}, \beta_k^{(l)} \} - \phi(\lambda_2, \alpha_2, \gamma), 
+\end{equation}
+	
+where $\phi (\lambda, \alpha, \beta)=\lambda[\alpha + \frac{1}{2} (1- \alpha) ||\beta||_2^2]$ is the elastic net penalty function and $\lambda_{1k}^{(l)}$, $\alpha_{1k}^{(l)}$, $\lambda_2$, $\alpha_2$ are the corresponding parameters for penalties in the experts network and in the gating function.
+
+## EM algorithm of RMoE
+
+In this section, we first derive the optimisation for RMoE, i.e. set $L=1$ in rLL. We denote ${\theta}=\left\{ {\gamma},{\beta}\right\}$ and ${\theta}^{(t)}=\left\{ {\gamma}^{(t)},{\beta}^{(t)} \right\}$ as the parameters in the $t^{th}$ iteration. For the regularised log-likelihood function in Equation rLL, the EM algorithm runs as follows:
+
+\textit{E-step:} Compute the conditional expectation of the complete data log-likelihood function given the observed data $D$ and current parameter, the corresponding expected complete data log-likelihood is as follows:  
+
+\begin{equation} \label{Q}
+\begin{aligned}
+    Q({\theta}, {\theta^{(t)}}) & = \mathbb{E}[PL(\theta)|D;\theta^{(t)}] \\
+    & = \sum_{i=1}^n \sum_{k=1} ^K r_{i k}^{(t)}[\log{\pi_{ik}({w_i},{\gamma})} + p_i(\beta_k;{x_i}, y_i)] \\
+    & - \sum_{k=1}^{K} \lambda_{1k} \left[ \alpha_{1k} |\beta_k|+ \frac{1}{2} (1-\alpha_{1k})||\beta_k||_2^2 \right] - \lambda_2\left[ \alpha_2 |{\gamma}| + \frac{1}{2}(1 - \alpha_2) ||\gamma||_2^2 \right],
+\end{aligned}
+\end{equation}
+
+\noindent
+where $p_i(\beta_k;{x_i}, y_i) = y_i \log{\left[{\frac{\exp{({x_i}^T \beta_k)}}{1 + \exp{({x_i}^T \beta_k)}}}\right]} + (1 - y_i) \log{\left[{\frac{1}{1 + \exp{({x_i}^T \beta_k)}}}\right]}$ is the log-likelihood function of the logistic distribution and 
+
+\begin{equation} \label{prop}
+\begin{aligned}
+r_{ik}^{(t)} = \frac{\pi_{ik}({w_i},{\gamma}^{(t)}) p_i(\beta_k^{(t)};{x_i}, y_i)}{\sum_{k=1}^K \pi_{ik}({w_i},{\gamma}^{(t)}) p_i(\beta_k ^{(t)};{x_i}, y_i)}
+\end{aligned}
+\end{equation}
+
+\noindent
+is the responsibility that latent class $k$ takes for sample $i$. 
+
+\textit{M-step:} In the M step, we maximise the expected complete data log likelihood function in Q function. This maximisation can be achieved by maximising ${\beta}$ and ${\gamma}$ as follows:
+
+
+\begin{align}
+    \beta_k^{(t+1)} & = \operatorname{argmax}_{\beta_k \in \mathbb{R}^p} \sum_{i=1}^n r_{ik}^{(t)} p_i(\beta_k;{x_i}, y_i) - \lambda_{1k} \left[ \alpha_{1k} |\beta_k|+ \frac{1}{2} (1-\alpha_{1k})||\beta_k||_2^2 \right],  \label{beta_up} \\
+    {\gamma}^{(t+1)} & =  \operatorname{argmax}_{\gamma \in \mathbb{R}^q} \sum_{k=1}^K \sum_{i=1}^n r_{ik}^{(t)}\operatorname{log} \pi_{ik}({w_i},{\gamma}) -  \lambda_2\left[ \alpha_2 |{\gamma}| + \frac{1}{2}(1 - \alpha_2) ||\gamma||_2^2 \right]. \label{gamma_up} 
+\end{align}
+
+From Equation above, it can be seen that the updating of $\beta_k$ is a weighted sparse logistic regression problem with ${x_i}$ as covariates, $y_i$ as response and  $r_{ik}^{(t)}$ as weight for $i^{th}$ sample. Equation ${\gamma}^{(t+1)}$ shows that the updating of ${\gamma}$ is also a sparse multinomial regression problem with $\pi_{ik}({w_i},{\gamma})$, defined in Equation gating networks, as covariates, $r_{ik}^{(t)}$ as response.
+
+To solve the optimisation $\beta_k^{(t+1)}$ and ${\gamma}^{(t+1)}$, a proximal-Newton iteration approach can be used, which repeatedly approximates the regularised log-likelihood by a quadratic function. 
+
+## MM algorithm of NEMoE
+
+For the regularised log-likelihood function in Equation rLL, we use the MM algorithm to estimate the parameters.
+
+Let $\Theta = \left\{ {\beta}^{(1)}, \ldots, {\beta}^{(L)}, {\gamma}  \right\}$ be aggregated parameters in Equation rLL. The estimated parameters and log likelihood function at $t^{th}$ iteration is $\Theta^{(t)}$ and ${\operatorname{rLL}}_m(\Theta^{(t)})$. We have 
+\begin{equation}\label{LL_m}
+    \begin{aligned}
+        {\operatorname{rLL}}_m(\Theta) - {\operatorname{rLL}}_m(\Theta^{(t)}) \geq & \sum_{l=1}^L \sum_{i=1}^n \sum_{k=1} ^K r_{i k}^{(l),(t)}[\log{\pi_{ik}({w_i},{\gamma})} + p_i(\beta_k^{(l)};{x_i}, y_i)] \\
+        & - \sum_{l=1}^L \sum_{i=1}^n \sum_{k=1} ^K r_{i k}^{(l),(t)}[\log{\pi_{ik}({w_i},{\gamma}^{(t)})} + p_i(\beta_k^{(l),(t)};{x_i}, y_i)],
+    \end{aligned}
+\end{equation}
+
+\noindent
+where 
+\begin{equation} \label{prop_m}
+\begin{aligned}
+r_{ik}^{(l),(t)} = \frac{\pi_{ik}({w_i},{\gamma}^{(t)}) p_i(\beta_k^{(l),(t)};{x_i}^{(l)}, y_i)}{\sum_{k=1}^K \pi_{ik}({w_i},{\gamma}^{(t)}) p_i(\beta_k ^{(l),(t)};{x_i}^{(l)}, y_i)}.
+\end{aligned}
+\end{equation}
+
+Similar to previous Q function, we can define the multi-level $Q$ function as
+
+\begin{equation}\label{Q_m}
+    \begin{aligned}
+        Q(\Theta,\Theta^{(t)})& = \sum_{l=1}^L \sum_{i=1}^n \sum_{k=1} ^K r_{i k}^{(l),(t)}[\log{\pi_{ik}({w_i},{\gamma})} + p_i(\beta_k^{(l)};{x_i}^{(l)}, y_i)] \\
+    & - \sum_{l=1}^L\sum_{k=1}^{K} \lambda_{1k}^{(l)} \left[ \alpha_{1k}^{(l)} |\beta_k^{(l)}|+ \frac{1}{2} (1-\alpha_{1k}^{(l)})||\beta_k^{(l)}||_2^2 \right]  \\
+    & - \lambda_2\left[ \alpha_2 |{\gamma}| + \frac{1}{2}(1 - \alpha_2) ||\gamma||_2^2 \right].
+    \end{aligned}
+\end{equation}
+
+With this definition of the $Q$ function, we have
+
+\begin{equation}
+    {\operatorname{rLL}}_m(\Theta) - {\operatorname{rLL}}_m(\Theta^{(t)}) \geq Q(\Theta, \Theta^{(t)}) - Q(\Theta^{(t)}, \Theta^{(t)}).
+\end{equation}
+
+Thus $Q(\Theta, \Theta^{(t)}) - Q(\Theta^{(t)}, \Theta^{(t)}) + \operatorname{rLL}_m(\Theta^{(t)})$ is a minoriser of $\operatorname{rLL}_m(\Theta)$ at $\Theta^{(t)}$. Similar to the EM algorithm, a local maximum can be computed by maximising $Q(\Theta,\Theta^{(t)})$ iteratively. Similar to equations $\beta_k^{(t+1)}$ and ${\gamma}^{(t+1)}$, we have
+
+\begin{align}
+    \hat{\beta}_k^{(l),(t+1)} & = \operatorname{argmax}_{\beta_k^{(l)} \in \mathbb{R}^{p_l}} \sum_{i=1}^n r_{ik}^{(l),(t)} p_i(\beta_k^{(l)};{x_i}^{(l)}, y_i) - \lambda_{1k}^{(l)} \left[ \alpha_{1k}^{(l)} |\beta_k^{(l)}|+ \frac{1}{2} (1-\alpha_{1k}^{(l)})||\beta_k^{(l)}||_2^2 \right],  \label{beta_up_m} \\
+    {\hat{\gamma}}^{(t+1)} & =  \operatorname{argmax}_{\gamma \in \mathbb{R}^q} \sum_{l=1}^L \sum_{k=1}^K \sum_{i=1}^n r_{ik}^{(l),(t)}\operatorname{log} \pi_{ik}({w_i},{\gamma}) -  \lambda_2\left[ \alpha_2 |{\gamma}| + \frac{1}{2}(1 - \alpha_2) ||\gamma||_2^2 \right]. \label{gamma_up_m} 
+\end{align}
+
+Equations $\hat{\beta}_k^{(l),(t+1)}$ and ${\hat{\gamma}}^{(t+1)}$ also can be solved by a proximal Newton method. 
+
+# Parameter Tunning
+
+In this section, we will give details of how NEMoE select tuning parameters. These procedures has been wrapped up in function ``cvNEMoE`` in our package (The usage of function can be found in ``Get started`` -> ``Evaluation and cross validation of NEMoE``).
+
+## Generate candidates parameters
+
+In NEMoE, two parameters $\lambda_1$ (similar to $\lambda_{1k}$) and $\lambda_2$ (similar to $\lambda_{2k}$) need to optimize (by default we set parameters corresponding to $\alpha$ be 0.5), we generate a series of candidates using following procedure, which is the same strategy used in package ``glmnet``[@friedman2010regularization].
+
+**Step 1:** Set a sequence for $\lambda_2$. In our package, we use $\lambda_2=(0.005, 0.014, 0.016, 0.02, 0.03, 0.05)$ as default.
+
+**Step 2:** Set maximum and minimum of $\lambda_1$, denote as $\lambda_{1max}$ and $\lambda_{1min}$. In NEMoE package, $\lambda_{1max}$ is determined using backtracking (See Backtracking search section) and $\lambda_{1min} = 0.01\lambda_{1max}$. 
+
+**Step 3:** Generate sequence of $\lambda_1$ with $g_1$ candidates, i.e. $\lambda_1=(\lambda_1^{(1)}, \ldots, \lambda_1^{(g_1)})$, by
+
+\begin{equation}
+\lambda_1^{(i)} = \lambda_{1min}exp\{ (i-1) C\}, \quad i=1,\ldots,g_1
+\end{equation}
+
+where $C=\frac{log(\lambda_{1max}) - log(\lambda_{1min}))}{g_1 - 1}$
+
+### Backtracking search
+
+For generating $\lambda_{1max}$, we use the following backtracking search strategy:
+
+**Step 1:** Generate a large enough $\lambda_{1max}$. In our package, we use $\lambda_{1max} = max(\frac{X_i^Ty}{n})$
+
+**Step 2:** Fitting NEMoE with few iterations (in NEMoE, we use 5 iterations).
+
+**Step 3:** If the fitted coefficients have at least one non-zero coefficients, stop. Or set $\lambda_{1max} = 0.8\lambda_{1max}$ and do **Step 2**.
+
+## Calculate evaluation criterion
+
+After generating candidate parameters, we fit corresponding NEMoE model with each parameter based on previous section. To select appropriate parameters, in our NEMoE package, we provide variety of evaluation criterion listed below. All of these have been available in function ``calcCriterion`` in our package. 
+
+
+  Criterion     Calculation
+ -------    ---------------------------------------------------------------------------------------------
+  AIC         $-2LL(\hat{\beta},\hat{\gamma}) + 2||\hat{\gamma}||_0+2\sum_{k=1}^K||\hat{\beta_k}||_0$
+  BIC         $-2LL(\hat{\beta},\hat{\gamma}) + ||\hat{\gamma}||_0log(n)+\sum_{k=1}^Klog(\sum_{i=1}^n \pi_{ik}) ||\hat{\beta_k}||_0$
+  eBIC        $-2LL(\hat{\beta},\hat{\gamma}) + ||\hat{\gamma}||_0[log(n)+log(p)]+\sum_{k=1}^Klog(\sum_{i=1}^n \pi_{ik}) ||\hat{\beta_k}||_0 + \sum_{k=1}^K ||\hat{\beta_k}||_0log(p)$
+  ICL         $-2LL(\hat{\beta},\hat{\gamma}) + ||\hat{\gamma}||_0log(n)+\sum_{k=1}^Klog(\sum_{i=1}^n \pi_{ik}) ||\hat{\beta_k}||_0+\sum_{k=1}^K\sum_{i=1}^nr_{ik}log(r_{ik})$  
+  -------    ---------------------------------------------------------------------------------------------
+where $\hat{\beta}$ and $\hat{\gamma}$ are the estimation of $\beta$ and $\gamma$. $||\cdot||_0$ is the vector zero norm, i.e. the number of non-zero values in the vector. AIC, BIC are widely used in statistics when select tuning parameters[@mclachlan2019finite, @khalili2007variable]. eBIC (extended BIC) is designed for high dimensional settings[@chen2008extended]. ICL stands for integrated classification criterion is widely used in mixture model[@biernacki2000assessing]. 
+
+# Reference
