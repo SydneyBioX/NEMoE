@@ -90,6 +90,18 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/Implementation Details.html">Implementation details</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -116,7 +128,7 @@
     </div>
 
     <pre class="usage"><span class='fu'>fitNEMoE</span><span class='op'>(</span>
-  <span class='va'>NEMoE</span>,
+  <span class='va'>NEMoE_obj</span>,
   beta_init <span class='op'>=</span> <span class='cn'>NULL</span>,
   gamma_init <span class='op'>=</span> <span class='cn'>NULL</span>,
   num_restart <span class='op'>=</span> <span class='fl'>5</span>,
@@ -129,7 +141,7 @@
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>NEMoE</th>
+      <th>NEMoE_obj</th>
       <td><p>a NEMoE object contain data and parameters for fitting.</p></td>
     </tr>
     <tr>
@@ -182,88 +194,88 @@ latent estimated latent classes.</p>
 #&gt; Nutrition dim: 168 27 
 #&gt; Number of latent class K:  2 
 #&gt; NEMoE output names (5): beta gamma r_i pen_fac LL
-#&gt; param names (14): lambda1 lambda2 ... early_stop init
+#&gt; param names (14): lambda1 lambda2 ... verbose early_stop
 #&gt; cross validation param names (9): g1 lambda2_seq ... itmax_cv itmax_fit</div><div class='input'><span class='va'>NEMoE_example</span> <span class='op'>&lt;-</span> <span class='fu'>fitNEMoE</span><span class='op'>(</span><span class='va'>NEMoE_example</span>, num_restart <span class='op'>=</span> <span class='fl'>0</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; Fitting NEMoE.... 
-#&gt; it: 0, PLL0:-1025.13
-#&gt; it: 1, PLL:-522.349
-#&gt; it: 2, PLL:-513.522
-#&gt; it: 3, PLL:-510.421
-#&gt; it: 4, PLL:-508.396
-#&gt; it: 5, PLL:-506.907
-#&gt; it: 6, PLL:-505.6
-#&gt; it: 7, PLL:-504.439
-#&gt; it: 8, PLL:-503.384
-#&gt; it: 9, PLL:-502.49
-#&gt; it: 10, PLL:-501.619
-#&gt; it: 11, PLL:-500.746
-#&gt; it: 12, PLL:-499.965
-#&gt; it: 13, PLL:-499.247
-#&gt; it: 14, PLL:-498.522
-#&gt; it: 15, PLL:-497.749
-#&gt; it: 16, PLL:-496.892
-#&gt; it: 17, PLL:-495.909
-#&gt; it: 18, PLL:-494.746
-#&gt; it: 19, PLL:-493.337
-#&gt; it: 20, PLL:-491.622
-#&gt; it: 21, PLL:-489.529
-#&gt; it: 22, PLL:-487.006
-#&gt; it: 23, PLL:-484.229
-#&gt; it: 24, PLL:-481.513
-#&gt; it: 25, PLL:-479.01
-#&gt; it: 26, PLL:-476.819
-#&gt; it: 27, PLL:-475.002
-#&gt; it: 28, PLL:-473.644
-#&gt; it: 29, PLL:-472.703
-#&gt; it: 30, PLL:-472.1
-#&gt; it: 31, PLL:-471.708
-#&gt; it: 32, PLL:-471.444
-#&gt; it: 33, PLL:-471.266
-#&gt; it: 34, PLL:-471.143
-#&gt; it: 35, PLL:-471.058
-#&gt; it: 36, PLL:-471.001
-#&gt; it: 37, PLL:-470.963
-#&gt; it: 38, PLL:-470.935
-#&gt; it: 39, PLL:-470.914
-#&gt; it: 40, PLL:-470.897
-#&gt; it: 41, PLL:-470.883
-#&gt; it: 42, PLL:-470.871
-#&gt; it: 43, PLL:-470.86
-#&gt; it: 44, PLL:-470.851
-#&gt; it: 45, PLL:-470.842
-#&gt; it: 46, PLL:-470.833
-#&gt; it: 47, PLL:-470.824
-#&gt; it: 48, PLL:-470.814
-#&gt; it: 49, PLL:-470.803
-#&gt; it: 50, PLL:-470.789
-#&gt; it: 51, PLL:-470.771
-#&gt; it: 52, PLL:-470.75
-#&gt; it: 53, PLL:-470.73
-#&gt; it: 54, PLL:-470.71
-#&gt; it: 55, PLL:-470.692
-#&gt; it: 56, PLL:-470.674
-#&gt; it: 57, PLL:-470.656
-#&gt; it: 58, PLL:-470.638
-#&gt; it: 59, PLL:-470.621
-#&gt; it: 60, PLL:-470.603
-#&gt; it: 61, PLL:-470.585
-#&gt; it: 62, PLL:-470.569
-#&gt; it: 63, PLL:-470.555
-#&gt; it: 64, PLL:-470.542
-#&gt; it: 65, PLL:-470.53
-#&gt; it: 66, PLL:-470.52
-#&gt; it: 67, PLL:-470.511
-#&gt; it: 68, PLL:-470.5
-#&gt; it: 69, PLL:-470.492
-#&gt; it: 70, PLL:-470.481
-#&gt; it: 71, PLL:-470.471
-#&gt; it: 72, PLL:-470.47
-#&gt; it: 73, PLL:-470.47
-#&gt; it: 74, PLL:-470.47
-#&gt; it: 75, PLL:-470.47
-#&gt; it: 76, PLL:-470.469
-#&gt; it: 77, PLL:-470.469
-#&gt; it: 78, PLL:-470.469</div></pre>
+#&gt; it: 0, PLL0:-1032.93
+#&gt; it: 1, PLL:-521.229
+#&gt; it: 2, PLL:-511.879
+#&gt; it: 3, PLL:-508.635
+#&gt; it: 4, PLL:-506.598
+#&gt; it: 5, PLL:-505.111
+#&gt; it: 6, PLL:-503.808
+#&gt; it: 7, PLL:-502.643
+#&gt; it: 8, PLL:-501.587
+#&gt; it: 9, PLL:-500.677
+#&gt; it: 10, PLL:-499.79
+#&gt; it: 11, PLL:-498.912
+#&gt; it: 12, PLL:-498.135
+#&gt; it: 13, PLL:-497.429
+#&gt; it: 14, PLL:-496.733
+#&gt; it: 15, PLL:-495.999
+#&gt; it: 16, PLL:-495.196
+#&gt; it: 17, PLL:-494.288
+#&gt; it: 18, PLL:-493.227
+#&gt; it: 19, PLL:-491.953
+#&gt; it: 20, PLL:-490.378
+#&gt; it: 21, PLL:-488.453
+#&gt; it: 22, PLL:-486.091
+#&gt; it: 23, PLL:-483.381
+#&gt; it: 24, PLL:-480.661
+#&gt; it: 25, PLL:-478.076
+#&gt; it: 26, PLL:-475.773
+#&gt; it: 27, PLL:-473.822
+#&gt; it: 28, PLL:-472.299
+#&gt; it: 29, PLL:-471.153
+#&gt; it: 30, PLL:-470.36
+#&gt; it: 31, PLL:-469.868
+#&gt; it: 32, PLL:-469.542
+#&gt; it: 33, PLL:-469.326
+#&gt; it: 34, PLL:-469.179
+#&gt; it: 35, PLL:-469.077
+#&gt; it: 36, PLL:-469.008
+#&gt; it: 37, PLL:-468.962
+#&gt; it: 38, PLL:-468.93
+#&gt; it: 39, PLL:-468.906
+#&gt; it: 40, PLL:-468.888
+#&gt; it: 41, PLL:-468.872
+#&gt; it: 42, PLL:-468.859
+#&gt; it: 43, PLL:-468.848
+#&gt; it: 44, PLL:-468.838
+#&gt; it: 45, PLL:-468.829
+#&gt; it: 46, PLL:-468.821
+#&gt; it: 47, PLL:-468.813
+#&gt; it: 48, PLL:-468.806
+#&gt; it: 49, PLL:-468.797
+#&gt; it: 50, PLL:-468.789
+#&gt; it: 51, PLL:-468.778
+#&gt; it: 52, PLL:-468.766
+#&gt; it: 53, PLL:-468.752
+#&gt; it: 54, PLL:-468.733
+#&gt; it: 55, PLL:-468.714
+#&gt; it: 56, PLL:-468.696
+#&gt; it: 57, PLL:-468.679
+#&gt; it: 58, PLL:-468.663
+#&gt; it: 59, PLL:-468.648
+#&gt; it: 60, PLL:-468.632
+#&gt; it: 61, PLL:-468.617
+#&gt; it: 62, PLL:-468.602
+#&gt; it: 63, PLL:-468.588
+#&gt; it: 64, PLL:-468.573
+#&gt; it: 65, PLL:-468.56
+#&gt; it: 66, PLL:-468.549
+#&gt; it: 67, PLL:-468.539
+#&gt; it: 68, PLL:-468.531
+#&gt; it: 69, PLL:-468.525
+#&gt; it: 70, PLL:-468.52
+#&gt; it: 71, PLL:-468.516
+#&gt; it: 72, PLL:-468.514
+#&gt; it: 73, PLL:-468.513
+#&gt; it: 74, PLL:-468.513
+#&gt; it: 75, PLL:-468.513
+#&gt; it: 76, PLL:-468.513
+#&gt; it: 77, PLL:-468.513
+#&gt; it: 78, PLL:-468.513</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

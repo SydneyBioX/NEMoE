@@ -90,6 +90,18 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/Implementation Details.html">Implementation details</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -116,7 +128,7 @@
     </div>
 
     <pre class="usage"><span class='fu'>NEMoE_predict</span><span class='op'>(</span>
-  <span class='va'>NEMoE</span>,
+  <span class='va'>NEMoE_obj</span>,
   <span class='va'>X_new</span>,
   Z_new <span class='op'>=</span> <span class='cn'>NULL</span>,
   full <span class='op'>=</span> <span class='cn'>TRUE</span>,
@@ -129,8 +141,8 @@
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>NEMoE</th>
-      <td><p>A NEMoE object with fitted parameters.</p></td>
+      <th>NEMoE_obj</th>
+      <td><p>A NEMoE_obj object with fitted parameters.</p></td>
     </tr>
     <tr>
       <th>X_new</th>

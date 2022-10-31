@@ -90,6 +90,18 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/Implementation Details.html">Implementation details</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -123,6 +135,7 @@
   cvParams <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='op'>)</span>,
   taxLevel <span class='op'>=</span> <span class='cn'>NULL</span>,
   taxTab <span class='op'>=</span> <span class='cn'>NULL</span>,
+  standardize <span class='op'>=</span> <span class='cn'>TRUE</span>,
   <span class='va'>...</span>
 <span class='op'>)</span></pre>
 
@@ -158,6 +171,11 @@ convert to a list automatically.</p></td>
     <tr>
       <th>taxTab</th>
       <td><p>A dataframe of taxonomic table.</p></td>
+    </tr>
+    <tr>
+      <th>standardize</th>
+      <td><p>Logical flag for x variable standardization.
+Default is standardize=TRUE.</p></td>
     </tr>
     <tr>
       <th>...</th>

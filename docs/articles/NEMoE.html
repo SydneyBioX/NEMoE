@@ -49,6 +49,18 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="../articles/Implementation%20Details.html">Implementation details</a>
+    </li>
+  </ul>
+</li>
       </ul>
 <ul class="nav navbar-nav navbar-right"></ul>
 </div>
@@ -76,10 +88,21 @@
 <div id="introduction" class="section level1">
 <h1 class="hasAnchor">
 <a href="#introduction" class="anchor"></a>Introduction</h1>
-<p>Nutrition-Enterotype Mixture of Expert Model(NEMoE) is an R package that facilitates discover latent classes shaped by nutrition intake that makes relationship between gut microbiome and health outcome different.</p>
-<p>The methods use a regularized mixture of experts model framework identify such latent classes and using EM algorithm to fitting the parameters in the model. The overall workflow of NEMoE are describe in the following figure:</p>
-<p><img src="../inst/figures/workflow.jpg" alt="workflow"> NEMoE use the nutrition data, microbiome data and health outcome as input to identify latent class based on the nutrients intake as well as the corresponding diet related microbiome signatures of disease.</p>
-<p>In this vignette, we go through a 16S microbiome data of Parkinson’s disease to identify the latent classes shaped by nutrition intake and finding the microbiome signatures for each latent class.</p>
+<p>Nutrition-Enterotype Mixture of Expert Model(NEMoE) is an R package
+that facilitates discover latent classes shaped by nutrition intake that
+makes relationship between gut microbiome and health outcome
+different.</p>
+<p>The methods use a regularized mixture of experts model framework
+identify such latent classes and using EM algorithm to fitting the
+parameters in the model. The overall workflow of NEMoE are describe in
+the following figure:</p>
+<p><img src="../inst/figures/workflow.jpg" alt="workflow"> NEMoE use
+the nutrition data, microbiome data and health outcome as input to
+identify latent class based on the nutrients intake as well as the
+corresponding diet related microbiome signatures of disease.</p>
+<p>In this vignette, we go through a 16S microbiome data of Parkinson’s
+disease to identify the latent classes shaped by nutrition intake and
+finding the microbiome signatures for each latent class.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">NEMoE</span><span class="op">)</span>
@@ -88,116 +111,139 @@
 <div id="gut-microbiome-and-parkinsons-disease" class="section level1">
 <h1 class="hasAnchor">
 <a href="#gut-microbiome-and-parkinsons-disease" class="anchor"></a>Gut microbiome and Parkinson’s disease</h1>
-<p>The <code>PD</code> dataset contain data from a gut microbiome-Parkinson’s disease study, the nutrition intake of each individual is also provided from food frequency questionnaire. We provide two type of the data(i.e. phyloseq object and a list) to construct input of NEMoE.</p>
-<p>In this example, we will use NEMoE to identify two latent class of different nutrition pattern with altered microbiome-PD relationships and identify the related nutrition features for the latent class and microbiome signatures for each latent class.</p>
+<p>The <code>PD</code> dataset contain data from a gut
+microbiome-Parkinson’s disease study, the nutrition intake of each
+individual is also provided from food frequency questionnaire. We
+provide two type of the data(i.e. phyloseq object and a list) to
+construct input of NEMoE.</p>
+<p>In this example, we will use NEMoE to identify two latent class of
+different nutrition pattern with altered microbiome-PD relationships and
+identify the related nutrition features for the latent class and
+microbiome signatures for each latent class.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="st">"PD"</span><span class="op">)</span></code></pre></div>
 <div id="build-the-nemoe-object-from-list" class="section level2">
 <h2 class="hasAnchor">
 <a href="#build-the-nemoe-object-from-list" class="anchor"></a>Build the <code>NEMoE</code> object from list</h2>
-<p>First we build the <code>NEMoE</code> object, the input data to build <code>NEMoE</code> have three part: microbiome data, nutrition data and health outcome. The nutrition data can be either matrix or dataframe which each row is a sample and each column is a nutrient. The microbiome data can be either a list of table that contain several microbiome matrix where each row is a sample and each column is a taxa (at the level) or a <code>phyloseq</code>. The response is a vector of different health state.</p>
-<p>In the following example, we build <code>NEMoE</code> object from list of microbiome data.</p>
+<p>First we build the <code>NEMoE</code> object, the input data to build
+<code>NEMoE</code> have three part: microbiome data, nutrition data and
+health outcome. The nutrition data can be either matrix or dataframe
+which each row is a sample and each column is a nutrient. The microbiome
+data can be either a list of table that contain several microbiome
+matrix where each row is a sample and each column is a taxa (at the
+level) or a <code>phyloseq</code>. The response is a vector of different
+health state.</p>
+<p>In the following example, we build <code>NEMoE</code> object from
+list of microbiome data.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">Microbiome</span> <span class="op">=</span> <span class="va">PD</span><span class="op">$</span><span class="va">data_list</span><span class="op">$</span><span class="va">Microbiome</span>
 <span class="va">Nutrition</span> <span class="op">=</span> <span class="va">PD</span><span class="op">$</span><span class="va">data_list</span><span class="op">$</span><span class="va">Nutrition</span>
 <span class="va">Response</span> <span class="op">=</span> <span class="va">PD</span><span class="op">$</span><span class="va">data_list</span><span class="op">$</span><span class="va">Response</span></code></pre></div>
-<p>NEMoE object can also incorporate the parameters used in the fitting, including <code>K</code>,<code>lambda1</code>, <code>lambda2</code>, <code>alpha1</code>, <code>alpha2</code> and <code>cvParams</code>.</p>
+<p>NEMoE object can also incorporate the parameters used in the fitting,
+including <code>K</code>,<code>lambda1</code>, <code>lambda2</code>,
+<code>alpha1</code>, <code>alpha2</code> and <code>cvParams</code>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">NEMoE</span> <span class="op">=</span> <span class="fu"><a href="../reference/NEMoE_buildFromList.html">NEMoE_buildFromList</a></span><span class="op">(</span><span class="va">Microbiome</span>, <span class="va">Nutrition</span>, <span class="va">Response</span>, K <span class="op">=</span> <span class="fl">2</span>, 
-                            lambda1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.005</span>, <span class="fl">0.014</span>, <span class="fl">0.016</span>, <span class="fl">0.023</span>, <span class="fl">0.025</span><span class="op">)</span>,
+                            lambda1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.005</span>, <span class="fl">0.01</span>, <span class="fl">0.016</span>, <span class="fl">0.023</span>, <span class="fl">0.025</span><span class="op">)</span>,
                             lambda2 <span class="op">=</span> <span class="fl">0.02</span>, alpha1 <span class="op">=</span> <span class="fl">0.5</span>, alpha2 <span class="op">=</span> <span class="fl">0.5</span>,
                             cvParams <span class="op">=</span> <span class="fu"><a href="../reference/createCVList.html">createCVList</a></span><span class="op">(</span>g1 <span class="op">=</span> <span class="fl">10</span>, shrink <span class="op">=</span> <span class="fl">0.4</span>,
                                                     track <span class="op">=</span> <span class="cn">F</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <div id="fit-the-nemoe-object" class="section level3">
 <h3 class="hasAnchor">
 <a href="#fit-the-nemoe-object" class="anchor"></a>Fit the <code>NEMoE</code> object</h3>
-<p>Now using the <code>fitNEMoE</code> function, we can fit <code>NEMoE</code> object with the specified parameters in the <code>NEMoE</code> object.</p>
+<p>Now using the <code>fitNEMoE</code> function, we can fit
+<code>NEMoE</code> object with the specified parameters in the
+<code>NEMoE</code> object.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">NEMoE</span> <span class="op">=</span> <span class="fu"><a href="../reference/fitNEMoE.html">fitNEMoE</a></span><span class="op">(</span><span class="va">NEMoE</span><span class="op">)</span>
 <span class="co">#&gt; Fitting NEMoE.... </span>
-<span class="co">#&gt; it: 0, PLL0:-501.619</span>
-<span class="co">#&gt; it: 1, PLL:-500.746</span>
-<span class="co">#&gt; it: 2, PLL:-499.965</span>
-<span class="co">#&gt; it: 3, PLL:-499.247</span>
-<span class="co">#&gt; it: 4, PLL:-498.522</span>
-<span class="co">#&gt; it: 5, PLL:-497.749</span>
-<span class="co">#&gt; it: 6, PLL:-496.892</span>
-<span class="co">#&gt; it: 7, PLL:-495.909</span>
-<span class="co">#&gt; it: 8, PLL:-494.746</span>
-<span class="co">#&gt; it: 9, PLL:-493.337</span>
-<span class="co">#&gt; it: 10, PLL:-491.622</span>
-<span class="co">#&gt; it: 11, PLL:-489.529</span>
-<span class="co">#&gt; it: 12, PLL:-487.006</span>
-<span class="co">#&gt; it: 13, PLL:-484.229</span>
-<span class="co">#&gt; it: 14, PLL:-481.513</span>
-<span class="co">#&gt; it: 15, PLL:-479.01</span>
-<span class="co">#&gt; it: 16, PLL:-476.819</span>
-<span class="co">#&gt; it: 17, PLL:-475.002</span>
-<span class="co">#&gt; it: 18, PLL:-473.644</span>
-<span class="co">#&gt; it: 19, PLL:-472.703</span>
-<span class="co">#&gt; it: 20, PLL:-472.1</span>
-<span class="co">#&gt; it: 21, PLL:-471.708</span>
-<span class="co">#&gt; it: 22, PLL:-471.444</span>
-<span class="co">#&gt; it: 23, PLL:-471.266</span>
-<span class="co">#&gt; it: 24, PLL:-471.143</span>
-<span class="co">#&gt; it: 25, PLL:-471.058</span>
-<span class="co">#&gt; it: 26, PLL:-471.001</span>
-<span class="co">#&gt; it: 27, PLL:-470.963</span>
-<span class="co">#&gt; it: 28, PLL:-470.935</span>
-<span class="co">#&gt; it: 29, PLL:-470.914</span>
-<span class="co">#&gt; it: 30, PLL:-470.897</span>
-<span class="co">#&gt; it: 31, PLL:-470.883</span>
-<span class="co">#&gt; it: 32, PLL:-470.871</span>
-<span class="co">#&gt; it: 33, PLL:-470.86</span>
-<span class="co">#&gt; it: 34, PLL:-470.851</span>
-<span class="co">#&gt; it: 35, PLL:-470.842</span>
-<span class="co">#&gt; it: 36, PLL:-470.833</span>
-<span class="co">#&gt; it: 37, PLL:-470.824</span>
-<span class="co">#&gt; it: 38, PLL:-470.814</span>
-<span class="co">#&gt; it: 39, PLL:-470.803</span>
-<span class="co">#&gt; it: 40, PLL:-470.789</span>
-<span class="co">#&gt; it: 41, PLL:-470.771</span>
-<span class="co">#&gt; it: 42, PLL:-470.75</span>
-<span class="co">#&gt; it: 43, PLL:-470.73</span>
-<span class="co">#&gt; it: 44, PLL:-470.71</span>
-<span class="co">#&gt; it: 45, PLL:-470.692</span>
-<span class="co">#&gt; it: 46, PLL:-470.674</span>
-<span class="co">#&gt; it: 47, PLL:-470.656</span>
-<span class="co">#&gt; it: 48, PLL:-470.638</span>
-<span class="co">#&gt; it: 49, PLL:-470.621</span>
-<span class="co">#&gt; it: 50, PLL:-470.603</span>
-<span class="co">#&gt; it: 51, PLL:-470.585</span>
-<span class="co">#&gt; it: 52, PLL:-470.569</span>
-<span class="co">#&gt; it: 53, PLL:-470.555</span>
-<span class="co">#&gt; it: 54, PLL:-470.542</span>
-<span class="co">#&gt; it: 55, PLL:-470.53</span>
-<span class="co">#&gt; it: 56, PLL:-470.52</span>
-<span class="co">#&gt; it: 57, PLL:-470.511</span>
-<span class="co">#&gt; it: 58, PLL:-470.5</span>
-<span class="co">#&gt; it: 59, PLL:-470.492</span>
-<span class="co">#&gt; it: 60, PLL:-470.481</span>
-<span class="co">#&gt; it: 61, PLL:-470.471</span>
-<span class="co">#&gt; it: 62, PLL:-470.47</span>
-<span class="co">#&gt; it: 63, PLL:-470.47</span>
-<span class="co">#&gt; it: 64, PLL:-470.47</span>
-<span class="co">#&gt; it: 65, PLL:-470.47</span>
-<span class="co">#&gt; it: 66, PLL:-470.469</span>
-<span class="co">#&gt; it: 67, PLL:-470.469</span>
-<span class="co">#&gt; it: 68, PLL:-470.469</span></code></pre></div>
-<p>The fitted log-likelihood can be get from <code>getLL</code> function.</p>
+<span class="co">#&gt; it: 0, PLL0:-499.79</span>
+<span class="co">#&gt; it: 1, PLL:-498.912</span>
+<span class="co">#&gt; it: 2, PLL:-498.135</span>
+<span class="co">#&gt; it: 3, PLL:-497.429</span>
+<span class="co">#&gt; it: 4, PLL:-496.733</span>
+<span class="co">#&gt; it: 5, PLL:-495.999</span>
+<span class="co">#&gt; it: 6, PLL:-495.196</span>
+<span class="co">#&gt; it: 7, PLL:-494.288</span>
+<span class="co">#&gt; it: 8, PLL:-493.227</span>
+<span class="co">#&gt; it: 9, PLL:-491.953</span>
+<span class="co">#&gt; it: 10, PLL:-490.378</span>
+<span class="co">#&gt; it: 11, PLL:-488.453</span>
+<span class="co">#&gt; it: 12, PLL:-486.091</span>
+<span class="co">#&gt; it: 13, PLL:-483.381</span>
+<span class="co">#&gt; it: 14, PLL:-480.661</span>
+<span class="co">#&gt; it: 15, PLL:-478.076</span>
+<span class="co">#&gt; it: 16, PLL:-475.773</span>
+<span class="co">#&gt; it: 17, PLL:-473.822</span>
+<span class="co">#&gt; it: 18, PLL:-472.299</span>
+<span class="co">#&gt; it: 19, PLL:-471.153</span>
+<span class="co">#&gt; it: 20, PLL:-470.36</span>
+<span class="co">#&gt; it: 21, PLL:-469.868</span>
+<span class="co">#&gt; it: 22, PLL:-469.542</span>
+<span class="co">#&gt; it: 23, PLL:-469.326</span>
+<span class="co">#&gt; it: 24, PLL:-469.179</span>
+<span class="co">#&gt; it: 25, PLL:-469.077</span>
+<span class="co">#&gt; it: 26, PLL:-469.008</span>
+<span class="co">#&gt; it: 27, PLL:-468.962</span>
+<span class="co">#&gt; it: 28, PLL:-468.93</span>
+<span class="co">#&gt; it: 29, PLL:-468.906</span>
+<span class="co">#&gt; it: 30, PLL:-468.888</span>
+<span class="co">#&gt; it: 31, PLL:-468.872</span>
+<span class="co">#&gt; it: 32, PLL:-468.859</span>
+<span class="co">#&gt; it: 33, PLL:-468.848</span>
+<span class="co">#&gt; it: 34, PLL:-468.838</span>
+<span class="co">#&gt; it: 35, PLL:-468.829</span>
+<span class="co">#&gt; it: 36, PLL:-468.821</span>
+<span class="co">#&gt; it: 37, PLL:-468.813</span>
+<span class="co">#&gt; it: 38, PLL:-468.806</span>
+<span class="co">#&gt; it: 39, PLL:-468.797</span>
+<span class="co">#&gt; it: 40, PLL:-468.789</span>
+<span class="co">#&gt; it: 41, PLL:-468.778</span>
+<span class="co">#&gt; it: 42, PLL:-468.766</span>
+<span class="co">#&gt; it: 43, PLL:-468.752</span>
+<span class="co">#&gt; it: 44, PLL:-468.733</span>
+<span class="co">#&gt; it: 45, PLL:-468.714</span>
+<span class="co">#&gt; it: 46, PLL:-468.696</span>
+<span class="co">#&gt; it: 47, PLL:-468.679</span>
+<span class="co">#&gt; it: 48, PLL:-468.663</span>
+<span class="co">#&gt; it: 49, PLL:-468.648</span>
+<span class="co">#&gt; it: 50, PLL:-468.632</span>
+<span class="co">#&gt; it: 51, PLL:-468.617</span>
+<span class="co">#&gt; it: 52, PLL:-468.602</span>
+<span class="co">#&gt; it: 53, PLL:-468.588</span>
+<span class="co">#&gt; it: 54, PLL:-468.573</span>
+<span class="co">#&gt; it: 55, PLL:-468.56</span>
+<span class="co">#&gt; it: 56, PLL:-468.549</span>
+<span class="co">#&gt; it: 57, PLL:-468.539</span>
+<span class="co">#&gt; it: 58, PLL:-468.531</span>
+<span class="co">#&gt; it: 59, PLL:-468.525</span>
+<span class="co">#&gt; it: 60, PLL:-468.52</span>
+<span class="co">#&gt; it: 61, PLL:-468.516</span>
+<span class="co">#&gt; it: 62, PLL:-468.514</span>
+<span class="co">#&gt; it: 63, PLL:-468.513</span>
+<span class="co">#&gt; it: 64, PLL:-468.513</span>
+<span class="co">#&gt; it: 65, PLL:-468.513</span>
+<span class="co">#&gt; it: 66, PLL:-468.513</span>
+<span class="co">#&gt; it: 67, PLL:-468.513</span>
+<span class="co">#&gt; it: 68, PLL:-468.513</span></code></pre></div>
+<p>The fitted log-likelihood can be get from <code>getLL</code>
+function.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/getLL.html">getLL</a></span><span class="op">(</span><span class="va">NEMoE</span><span class="op">)</span>
 <span class="co">#&gt;            LL_obs   PLL_obs LL_complete PLL_complete</span>
-<span class="co">#&gt; Phylum  -90.29506 -117.7473   -147.2789    -174.7311</span>
-<span class="co">#&gt; Order   -84.96665 -116.4175   -139.6226    -171.0734</span>
-<span class="co">#&gt; Family  -82.71688 -115.5229   -139.3969    -172.2029</span>
-<span class="co">#&gt; Genus   -78.65367 -113.8171   -144.3031    -179.4665</span>
-<span class="co">#&gt; ASV     -64.79430 -109.3006   -133.2118    -177.7181</span>
-<span class="co">#&gt; All    -401.42655 -470.4693   -703.8133    -772.8560</span></code></pre></div>
-<p>The corresponding coefficients in gating function, i.e. the effect size of each nutrition variables of their contribution to the different latent class can be obtained from <code>getCoef</code> function.</p>
+<span class="co">#&gt; Phylum  -90.21069 -117.7364   -147.4908    -175.0165</span>
+<span class="co">#&gt; Order   -83.14621 -114.5389   -137.9087    -169.3014</span>
+<span class="co">#&gt; Family  -82.83030 -115.6088   -139.6559    -172.4345</span>
+<span class="co">#&gt; Genus   -78.56857 -113.8025   -144.2888    -179.5227</span>
+<span class="co">#&gt; ASV     -64.70312 -109.2637   -133.2256    -177.7862</span>
+<span class="co">#&gt; All    -399.45888 -468.5129   -702.5698    -771.6239</span></code></pre></div>
+<p>The corresponding coefficients in gating function, i.e. the effect
+size of each nutrition variables of their contribution to the different
+latent class can be obtained from <code>getCoef</code> function.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">coef.Gating</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getCoef.html">getCoef</a></span><span class="op">(</span><span class="va">NEMoE</span><span class="op">)</span><span class="op">$</span><span class="va">coef.gating</span></code></pre></div>
-<p>These coefficients of gating network can be plotted by <code>plotGating</code> function.</p>
+<p>These coefficients of gating network can be plotted by
+<code>plotGating</code> function.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">p_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plotGating.html">plotGating</a></span><span class="op">(</span><span class="va">NEMoE</span><span class="op">)</span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -206,10 +252,14 @@
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">p_list</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <p><img src="NEMoE_files/figure-html/unnamed-chunk-10-1.png" width="768"></p>
-<p>The corresponding coefficients in experts network, i.e. the effect size of each microbiome features of their contribution to health outcome (PD state here) in different latent class can be obtained from <code>getCoef</code> function.</p>
+<p>The corresponding coefficients in experts network, i.e. the effect
+size of each microbiome features of their contribution to health outcome
+(PD state here) in different latent class can be obtained from
+<code>getCoef</code> function.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">coef.Experts</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getCoef.html">getCoef</a></span><span class="op">(</span><span class="va">NEMoE</span><span class="op">)</span><span class="op">$</span><span class="va">coef.experts</span></code></pre></div>
-<p>These coefficients of experts network can be plotted by <code>plotGating</code> function.</p>
+<p>These coefficients of experts network can be plotted by
+<code>plotGating</code> function.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">p_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plotExperts.html">plotExperts</a></span><span class="op">(</span><span class="va">NEMoE</span><span class="op">)</span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -232,7 +282,9 @@
 <h3 class="hasAnchor">
 <a href="#single-level-nemoe" class="anchor"></a>Single level <code>NEMoE</code>
 </h3>
-<p><code>NEMoE</code> can also built based on single level data, we illustrated it using <code>Genus</code> level of the Microbiome-PD dataset.</p>
+<p><code>NEMoE</code> can also built based on single level data, we
+illustrated it using <code>Genus</code> level of the Microbiome-PD
+dataset.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">Microbiome_gen</span> <span class="op">&lt;-</span> <span class="va">Microbiome</span><span class="op">$</span><span class="va">Genus</span></code></pre></div>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
@@ -328,22 +380,32 @@
 <div id="build-the-nemoe-object-from-phyloseq" class="section level2">
 <h2 class="hasAnchor">
 <a href="#build-the-nemoe-object-from-phyloseq" class="anchor"></a>Build the <code>NEMoE</code> object from phyloseq</h2>
-<p>In parallel, <code>NEMoE</code> object can be built from <code>phyloseq</code> object from the microbiome counts data. <code>NEMoE</code> wrapper functions for TSS normalization and transformations of the counts data. Also which levels of the data incorporated in the data can be determined by user.</p>
+<p>In parallel, <code>NEMoE</code> object can be built from
+<code>phyloseq</code> object from the microbiome counts data.
+<code>NEMoE</code> wrapper functions for TSS normalization and
+transformations of the counts data. Also which levels of the data
+incorporated in the data can be determined by user.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">sample_PD</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/phyloseq/man/sample_data-methods.html">sample_data</a></span><span class="op">(</span><span class="va">PD</span><span class="op">$</span><span class="va">ps</span><span class="op">)</span>
 <span class="va">Response</span> <span class="op">&lt;-</span> <span class="va">sample_PD</span><span class="op">$</span><span class="va">PD</span>
 <span class="va">Nutrition</span> <span class="op">&lt;-</span> <span class="va">sample_PD</span><span class="op">[</span>,<span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">sample_PD</span><span class="op">)</span><span class="op">]</span></code></pre></div>
-<p>In the following example, we first TSS normalized data, then filter the taxa with prevalance larger than 0.7 (i.e. the taxa non-zero in more than 70% of the sample) and variance larger than 5e-5. Then the data are further tranformed using arcsin transformation and zscored. The resulting Microbiome data is to used built <code>NEMoE</code> object.</p>
+<p>In the following example, we first TSS normalized data, then filter
+the taxa with prevalance larger than 0.7 (i.e. the taxa non-zero in more
+than 70% of the sample) and variance larger than 5e-5. Then the data are
+further tranformed using arcsin transformation and zscored. The
+resulting Microbiome data is to used built <code>NEMoE</code>
+object.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">NEMoE_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/NEMoE_buildFromPhyloseq.html">NEMoE_buildFromPhyloseq</a></span><span class="op">(</span>ps <span class="op">=</span> <span class="va">PD</span><span class="op">$</span><span class="va">ps</span>, Nutrition <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html">scale</a></span><span class="op">(</span><span class="va">Nutrition</span><span class="op">)</span>,
                                  Response <span class="op">=</span> <span class="va">Response</span>,  K <span class="op">=</span> <span class="fl">2</span>, 
                                  lambda1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.005</span>, <span class="fl">0.014</span>, <span class="fl">0.016</span>, <span class="fl">0.023</span>, <span class="fl">0.025</span><span class="op">)</span>,
                                  lambda2 <span class="op">=</span> <span class="fl">0.02</span>, alpha1 <span class="op">=</span> <span class="fl">0.5</span>, alpha2 <span class="op">=</span> <span class="fl">0.5</span>,
                                  filtParam <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>prev <span class="op">=</span> <span class="fl">0.7</span>, var <span class="op">=</span> <span class="fl">1e-5</span><span class="op">)</span>,
-                                 transParam <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"asin"</span>, scale <span class="op">=</span> <span class="cn">T</span><span class="op">)</span>,
+                                 transParam <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"asin"</span><span class="op">)</span>,
                                  taxLevel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Phylum"</span>,<span class="st">"Order"</span>,<span class="st">"Family"</span>,
                                               <span class="st">"Genus"</span>,<span class="st">"ASV"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>The <code>NEMoE</code> object can also be fitted and visualized as it is in the previous section.</p>
+<p>The <code>NEMoE</code> object can also be fitted and visualized as it
+is in the previous section.</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">NEMoE_ps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fitNEMoE.html">fitNEMoE</a></span><span class="op">(</span><span class="va">NEMoE_ps</span><span class="op">)</span>
 <span class="co">#&gt; Fitting NEMoE.... </span>
@@ -409,7 +471,7 @@
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">p_list</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <p><img src="NEMoE_files/figure-html/unnamed-chunk-30-1.png" width="768"></p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">p_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plotExperts.html">plotExperts</a></span><span class="op">(</span><span class="va">NEMoE</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">p_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plotExperts.html">plotExperts</a></span><span class="op">(</span><span class="va">NEMoE_ps</span><span class="op">)</span></code></pre></div>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">p_list</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span><span class="op">(</span><span class="st">"Coefficients of Phylum level"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> </code></pre></div>
 <p><img src="NEMoE_files/figure-html/unnamed-chunk-32-1.png" width="768"></p>
@@ -429,19 +491,22 @@
 <div id="evaluation-and-cross-validation-of-nemoe" class="section level2">
 <h2 class="hasAnchor">
 <a href="#evaluation-and-cross-validation-of-nemoe" class="anchor"></a>Evaluation and cross validation of NEMoE</h2>
-<p>We provide many metric including statistics such as <code>AIC</code>, <code>BIC</code> and <code>ICL</code> and cross validation metric such as cross validation accuracy and AUC.</p>
+<p>We provide many metric including statistics such as <code>AIC</code>,
+<code>BIC</code> and <code>ICL</code> and cross validation metric such
+as cross validation accuracy and AUC.</p>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/calcCriterion.html">calcCriterion</a></span><span class="op">(</span><span class="va">NEMoE</span>, <span class="st">"all"</span><span class="op">)</span>
-<span class="co">#&gt;            AIC       BIC      ICL1      ICL2     eBIC      mAIC      mBIC</span>
-<span class="co">#&gt; [1,] -996.8531 -1299.878 -1601.627 -1904.651 -1662.26 -1028.853 -1311.193</span>
-<span class="co">#&gt;          mICL1     mICL2  accuracy  D.square       TPR      TNR        F1</span>
-<span class="co">#&gt; [1,] -1633.627 -1915.966 0.6904412 0.1508229 0.7907833 0.561678 0.7411134</span>
+<span class="co">#&gt;            AIC       BIC     ICL1      ICL2      eBIC      mAIC      mBIC</span>
+<span class="co">#&gt; [1,] -994.9178 -1301.066 -1601.14 -1907.288 -1668.063 -1034.918 -1328.765</span>
+<span class="co">#&gt;         mICL1     mICL2  accuracy  D.square       TPR       TNR        F1</span>
+<span class="co">#&gt; [1,] -1641.14 -1934.987 0.6845588 0.1405786 0.7790186 0.5601094 0.7341976</span>
 <span class="co">#&gt;            auc</span>
-<span class="co">#&gt; [1,] 0.7766071</span></code></pre></div>
+<span class="co">#&gt; [1,] 0.7696813</span></code></pre></div>
 <p>Also the one can use this procedure to select parameters.</p>
 <div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">NEMoE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cvNEMoE.html">cvNEMoE</a></span><span class="op">(</span><span class="va">NEMoE</span><span class="op">)</span></code></pre></div>
-<p>The selected parameters obtained from the cross validation result can be used to fitting the model.</p>
+<p>The selected parameters obtained from the cross validation result can
+be used to fitting the model.</p>
 <div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">lambda1_choose</span> <span class="op">&lt;-</span> <span class="va">NEMoE</span><span class="op">@</span><span class="va">cvResult</span><span class="op">$</span><span class="va">lambda1_choose</span>
 <span class="va">lambda2_choose</span> <span class="op">&lt;-</span> <span class="va">NEMoE</span><span class="op">@</span><span class="va">cvResult</span><span class="op">$</span><span class="va">lambda2_choose</span></code></pre></div>
@@ -450,107 +515,92 @@
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">NEMoE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fitNEMoE.html">fitNEMoE</a></span><span class="op">(</span><span class="va">NEMoE</span><span class="op">)</span>
 <span class="co">#&gt; Fitting NEMoE.... </span>
-<span class="co">#&gt; it: 0, PLL0:-501.999</span>
-<span class="co">#&gt; it: 1, PLL:-501.178</span>
-<span class="co">#&gt; it: 2, PLL:-500.423</span>
-<span class="co">#&gt; it: 3, PLL:-499.665</span>
-<span class="co">#&gt; it: 4, PLL:-498.831</span>
-<span class="co">#&gt; it: 5, PLL:-497.887</span>
-<span class="co">#&gt; it: 6, PLL:-496.796</span>
-<span class="co">#&gt; it: 7, PLL:-495.556</span>
-<span class="co">#&gt; it: 8, PLL:-494.065</span>
-<span class="co">#&gt; it: 9, PLL:-492.29</span>
-<span class="co">#&gt; it: 10, PLL:-490.307</span>
-<span class="co">#&gt; it: 11, PLL:-488.146</span>
-<span class="co">#&gt; it: 12, PLL:-485.955</span>
-<span class="co">#&gt; it: 13, PLL:-483.94</span>
-<span class="co">#&gt; it: 14, PLL:-482.116</span>
-<span class="co">#&gt; it: 15, PLL:-480.472</span>
-<span class="co">#&gt; it: 16, PLL:-479.108</span>
-<span class="co">#&gt; it: 17, PLL:-478.112</span>
-<span class="co">#&gt; it: 18, PLL:-477.387</span>
-<span class="co">#&gt; it: 19, PLL:-476.901</span>
-<span class="co">#&gt; it: 20, PLL:-476.578</span>
-<span class="co">#&gt; it: 21, PLL:-476.35</span>
-<span class="co">#&gt; it: 22, PLL:-476.176</span>
-<span class="co">#&gt; it: 23, PLL:-476.042</span>
-<span class="co">#&gt; it: 24, PLL:-475.942</span>
-<span class="co">#&gt; it: 25, PLL:-475.866</span>
-<span class="co">#&gt; it: 26, PLL:-475.811</span>
-<span class="co">#&gt; it: 27, PLL:-475.772</span>
-<span class="co">#&gt; it: 28, PLL:-475.744</span>
-<span class="co">#&gt; it: 29, PLL:-475.722</span>
-<span class="co">#&gt; it: 30, PLL:-475.705</span>
-<span class="co">#&gt; it: 31, PLL:-475.69</span>
-<span class="co">#&gt; it: 32, PLL:-475.677</span>
-<span class="co">#&gt; it: 33, PLL:-475.665</span>
-<span class="co">#&gt; it: 34, PLL:-475.654</span>
-<span class="co">#&gt; it: 35, PLL:-475.644</span>
-<span class="co">#&gt; it: 36, PLL:-475.636</span>
-<span class="co">#&gt; it: 37, PLL:-475.628</span>
-<span class="co">#&gt; it: 38, PLL:-475.62</span>
-<span class="co">#&gt; it: 39, PLL:-475.612</span>
-<span class="co">#&gt; it: 40, PLL:-475.603</span>
-<span class="co">#&gt; it: 41, PLL:-475.591</span>
-<span class="co">#&gt; it: 42, PLL:-475.577</span>
-<span class="co">#&gt; it: 43, PLL:-475.558</span>
-<span class="co">#&gt; it: 44, PLL:-475.533</span>
-<span class="co">#&gt; it: 45, PLL:-475.507</span>
-<span class="co">#&gt; it: 46, PLL:-475.479</span>
-<span class="co">#&gt; it: 47, PLL:-475.448</span>
-<span class="co">#&gt; it: 48, PLL:-475.414</span>
-<span class="co">#&gt; it: 49, PLL:-475.377</span>
-<span class="co">#&gt; it: 50, PLL:-475.348</span>
-<span class="co">#&gt; it: 51, PLL:-475.323</span>
-<span class="co">#&gt; it: 52, PLL:-475.3</span>
-<span class="co">#&gt; it: 53, PLL:-475.278</span>
-<span class="co">#&gt; it: 54, PLL:-475.257</span>
-<span class="co">#&gt; it: 55, PLL:-475.237</span>
-<span class="co">#&gt; it: 56, PLL:-475.219</span>
-<span class="co">#&gt; it: 57, PLL:-475.202</span>
-<span class="co">#&gt; it: 58, PLL:-475.188</span>
-<span class="co">#&gt; it: 59, PLL:-475.175</span>
-<span class="co">#&gt; it: 60, PLL:-475.166</span>
-<span class="co">#&gt; it: 61, PLL:-475.161</span>
-<span class="co">#&gt; it: 62, PLL:-475.157</span>
-<span class="co">#&gt; it: 63, PLL:-475.153</span>
-<span class="co">#&gt; it: 64, PLL:-475.15</span>
-<span class="co">#&gt; it: 65, PLL:-475.146</span>
-<span class="co">#&gt; it: 66, PLL:-475.143</span>
-<span class="co">#&gt; it: 67, PLL:-475.14</span>
-<span class="co">#&gt; it: 68, PLL:-475.137</span>
-<span class="co">#&gt; it: 69, PLL:-475.133</span>
-<span class="co">#&gt; it: 70, PLL:-475.129</span>
-<span class="co">#&gt; it: 71, PLL:-475.124</span>
-<span class="co">#&gt; it: 72, PLL:-475.118</span>
-<span class="co">#&gt; it: 73, PLL:-475.11</span>
-<span class="co">#&gt; it: 74, PLL:-475.101</span>
-<span class="co">#&gt; it: 75, PLL:-475.088</span>
-<span class="co">#&gt; it: 76, PLL:-475.075</span>
-<span class="co">#&gt; it: 77, PLL:-475.058</span>
-<span class="co">#&gt; it: 78, PLL:-475.038</span>
-<span class="co">#&gt; it: 79, PLL:-475.012</span>
-<span class="co">#&gt; it: 80, PLL:-474.978</span>
-<span class="co">#&gt; it: 81, PLL:-474.935</span>
-<span class="co">#&gt; it: 82, PLL:-474.878</span>
-<span class="co">#&gt; it: 83, PLL:-474.838</span>
-<span class="co">#&gt; it: 84, PLL:-474.807</span>
-<span class="co">#&gt; it: 85, PLL:-474.784</span>
-<span class="co">#&gt; it: 86, PLL:-474.766</span>
-<span class="co">#&gt; it: 87, PLL:-474.753</span>
-<span class="co">#&gt; it: 88, PLL:-474.743</span>
-<span class="co">#&gt; it: 89, PLL:-474.736</span>
-<span class="co">#&gt; it: 90, PLL:-474.731</span>
-<span class="co">#&gt; it: 91, PLL:-474.727</span>
-<span class="co">#&gt; it: 92, PLL:-474.724</span>
-<span class="co">#&gt; it: 93, PLL:-474.723</span>
-<span class="co">#&gt; it: 94, PLL:-474.722</span>
-<span class="co">#&gt; it: 95, PLL:-474.721</span>
-<span class="co">#&gt; it: 96, PLL:-474.721</span>
-<span class="co">#&gt; it: 97, PLL:-474.721</span>
-<span class="co">#&gt; it: 98, PLL:-474.72</span>
-<span class="co">#&gt; it: 99, PLL:-474.72</span>
-<span class="co">#&gt; it: 100, PLL:-474.72</span></code></pre></div>
+<span class="co">#&gt; it: 0, PLL0:-501.013</span>
+<span class="co">#&gt; it: 1, PLL:-500.212</span>
+<span class="co">#&gt; it: 2, PLL:-499.472</span>
+<span class="co">#&gt; it: 3, PLL:-498.733</span>
+<span class="co">#&gt; it: 4, PLL:-497.929</span>
+<span class="co">#&gt; it: 5, PLL:-497.022</span>
+<span class="co">#&gt; it: 6, PLL:-496.004</span>
+<span class="co">#&gt; it: 7, PLL:-494.839</span>
+<span class="co">#&gt; it: 8, PLL:-493.45</span>
+<span class="co">#&gt; it: 9, PLL:-491.807</span>
+<span class="co">#&gt; it: 10, PLL:-489.977</span>
+<span class="co">#&gt; it: 11, PLL:-488.07</span>
+<span class="co">#&gt; it: 12, PLL:-486.185</span>
+<span class="co">#&gt; it: 13, PLL:-484.433</span>
+<span class="co">#&gt; it: 14, PLL:-482.941</span>
+<span class="co">#&gt; it: 15, PLL:-481.805</span>
+<span class="co">#&gt; it: 16, PLL:-480.969</span>
+<span class="co">#&gt; it: 17, PLL:-480.343</span>
+<span class="co">#&gt; it: 18, PLL:-479.852</span>
+<span class="co">#&gt; it: 19, PLL:-479.398</span>
+<span class="co">#&gt; it: 20, PLL:-478.804</span>
+<span class="co">#&gt; it: 21, PLL:-478.021</span>
+<span class="co">#&gt; it: 22, PLL:-477.311</span>
+<span class="co">#&gt; it: 23, PLL:-476.739</span>
+<span class="co">#&gt; it: 24, PLL:-476.297</span>
+<span class="co">#&gt; it: 25, PLL:-476.022</span>
+<span class="co">#&gt; it: 26, PLL:-475.841</span>
+<span class="co">#&gt; it: 27, PLL:-475.714</span>
+<span class="co">#&gt; it: 28, PLL:-475.621</span>
+<span class="co">#&gt; it: 29, PLL:-475.549</span>
+<span class="co">#&gt; it: 30, PLL:-475.487</span>
+<span class="co">#&gt; it: 31, PLL:-475.443</span>
+<span class="co">#&gt; it: 32, PLL:-475.407</span>
+<span class="co">#&gt; it: 33, PLL:-475.374</span>
+<span class="co">#&gt; it: 34, PLL:-475.341</span>
+<span class="co">#&gt; it: 35, PLL:-475.309</span>
+<span class="co">#&gt; it: 36, PLL:-475.274</span>
+<span class="co">#&gt; it: 37, PLL:-475.236</span>
+<span class="co">#&gt; it: 38, PLL:-475.192</span>
+<span class="co">#&gt; it: 39, PLL:-475.141</span>
+<span class="co">#&gt; it: 40, PLL:-475.084</span>
+<span class="co">#&gt; it: 41, PLL:-475.019</span>
+<span class="co">#&gt; it: 42, PLL:-474.971</span>
+<span class="co">#&gt; it: 43, PLL:-474.924</span>
+<span class="co">#&gt; it: 44, PLL:-474.879</span>
+<span class="co">#&gt; it: 45, PLL:-474.837</span>
+<span class="co">#&gt; it: 46, PLL:-474.808</span>
+<span class="co">#&gt; it: 47, PLL:-474.785</span>
+<span class="co">#&gt; it: 48, PLL:-474.763</span>
+<span class="co">#&gt; it: 49, PLL:-474.742</span>
+<span class="co">#&gt; it: 50, PLL:-474.72</span>
+<span class="co">#&gt; it: 51, PLL:-474.698</span>
+<span class="co">#&gt; it: 52, PLL:-474.676</span>
+<span class="co">#&gt; it: 53, PLL:-474.651</span>
+<span class="co">#&gt; it: 54, PLL:-474.622</span>
+<span class="co">#&gt; it: 55, PLL:-474.589</span>
+<span class="co">#&gt; it: 56, PLL:-474.547</span>
+<span class="co">#&gt; it: 57, PLL:-474.499</span>
+<span class="co">#&gt; it: 58, PLL:-474.451</span>
+<span class="co">#&gt; it: 59, PLL:-474.417</span>
+<span class="co">#&gt; it: 60, PLL:-474.387</span>
+<span class="co">#&gt; it: 61, PLL:-474.36</span>
+<span class="co">#&gt; it: 62, PLL:-474.333</span>
+<span class="co">#&gt; it: 63, PLL:-474.302</span>
+<span class="co">#&gt; it: 64, PLL:-474.27</span>
+<span class="co">#&gt; it: 65, PLL:-474.233</span>
+<span class="co">#&gt; it: 66, PLL:-474.189</span>
+<span class="co">#&gt; it: 67, PLL:-474.134</span>
+<span class="co">#&gt; it: 68, PLL:-474.066</span>
+<span class="co">#&gt; it: 69, PLL:-474.012</span>
+<span class="co">#&gt; it: 70, PLL:-473.974</span>
+<span class="co">#&gt; it: 71, PLL:-473.947</span>
+<span class="co">#&gt; it: 72, PLL:-473.927</span>
+<span class="co">#&gt; it: 73, PLL:-473.912</span>
+<span class="co">#&gt; it: 74, PLL:-473.902</span>
+<span class="co">#&gt; it: 75, PLL:-473.895</span>
+<span class="co">#&gt; it: 76, PLL:-473.89</span>
+<span class="co">#&gt; it: 77, PLL:-473.888</span>
+<span class="co">#&gt; it: 78, PLL:-473.886</span>
+<span class="co">#&gt; it: 79, PLL:-473.885</span>
+<span class="co">#&gt; it: 80, PLL:-473.885</span>
+<span class="co">#&gt; it: 81, PLL:-473.884</span>
+<span class="co">#&gt; it: 82, PLL:-473.884</span>
+<span class="co">#&gt; it: 83, PLL:-473.884</span>
+<span class="co">#&gt; it: 84, PLL:-473.884</span>
+<span class="co">#&gt; it: 85, PLL:-473.884</span></code></pre></div>
 <div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">p_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plotGating.html">plotGating</a></span><span class="op">(</span><span class="va">NEMoE_ps</span><span class="op">)</span></code></pre></div>
 <div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
@@ -585,7 +635,7 @@
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span>
 <span class="co">#&gt; R version 4.1.0 (2021-05-18)</span>
 <span class="co">#&gt; Platform: x86_64-w64-mingw32/x64 (64-bit)</span>
-<span class="co">#&gt; Running under: Windows 10 x64 (build 19042)</span>
+<span class="co">#&gt; Running under: Windows 10 x64 (build 22000)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Matrix products: default</span>
 <span class="co">#&gt; </span>
@@ -600,41 +650,42 @@
 <span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; other attached packages:</span>
-<span class="co">#&gt; [1] phyloseq_1.36.0 NEMoE_1.1.0     ggplot2_3.3.5  </span>
+<span class="co">#&gt; [1] phyloseq_1.36.0 NEMoE_1.1.0     ggplot2_3.3.6  </span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; loaded via a namespace (and not attached):</span>
 <span class="co">#&gt;  [1] nlme_3.1-153           bitops_1.0-7           fs_1.5.0              </span>
 <span class="co">#&gt;  [4] rprojroot_2.0.2        GenomeInfoDb_1.28.4    tools_4.1.0           </span>
 <span class="co">#&gt;  [7] bslib_0.3.0            utf8_1.2.2             R6_2.5.1              </span>
-<span class="co">#&gt; [10] vegan_2.5-7            DBI_1.1.1              BiocGenerics_0.38.0   </span>
+<span class="co">#&gt; [10] vegan_2.5-7            DBI_1.1.3              BiocGenerics_0.38.0   </span>
 <span class="co">#&gt; [13] mgcv_1.8-36            colorspace_2.0-2       permute_0.9-5         </span>
-<span class="co">#&gt; [16] rhdf5filters_1.4.0     ade4_1.7-17            withr_2.4.2           </span>
+<span class="co">#&gt; [16] rhdf5filters_1.4.0     ade4_1.7-17            withr_2.5.0           </span>
 <span class="co">#&gt; [19] tidyselect_1.1.1       compiler_4.1.0         glmnet_4.1-2          </span>
-<span class="co">#&gt; [22] textshaping_0.3.5      Biobase_2.52.0         desc_1.3.0            </span>
-<span class="co">#&gt; [25] labeling_0.4.2         sass_0.4.0             scales_1.1.1          </span>
-<span class="co">#&gt; [28] pkgdown_1.6.1          systemfonts_1.0.2      stringr_1.4.0         </span>
-<span class="co">#&gt; [31] digest_0.6.27          rmarkdown_2.10         XVector_0.32.0        </span>
-<span class="co">#&gt; [34] pkgconfig_2.0.3        htmltools_0.5.2        highr_0.9             </span>
-<span class="co">#&gt; [37] fastmap_1.1.0          rlang_0.4.11           shape_1.4.6           </span>
-<span class="co">#&gt; [40] jquerylib_0.1.4        generics_0.1.0         farver_2.1.0          </span>
-<span class="co">#&gt; [43] jsonlite_1.7.2         mclust_5.4.7           BiocParallel_1.26.2   </span>
-<span class="co">#&gt; [46] dplyr_1.0.7            RCurl_1.98-1.4         magrittr_2.0.1        </span>
-<span class="co">#&gt; [49] GenomeInfoDbData_1.2.6 biomformat_1.20.0      Matrix_1.3-4          </span>
-<span class="co">#&gt; [52] Rcpp_1.0.7             munsell_0.5.0          S4Vectors_0.30.0      </span>
-<span class="co">#&gt; [55] Rhdf5lib_1.14.2        fansi_0.5.0            ape_5.5               </span>
-<span class="co">#&gt; [58] lifecycle_1.0.0        stringi_1.7.4          yaml_2.2.1            </span>
-<span class="co">#&gt; [61] MASS_7.3-54            zlibbioc_1.38.0        rhdf5_2.36.0          </span>
-<span class="co">#&gt; [64] plyr_1.8.6             grid_4.1.0             parallel_4.1.0        </span>
-<span class="co">#&gt; [67] crayon_1.4.1           lattice_0.20-44        Biostrings_2.60.2     </span>
-<span class="co">#&gt; [70] splines_4.1.0          multtest_2.48.0        knitr_1.34            </span>
-<span class="co">#&gt; [73] pillar_1.6.2           igraph_1.2.6           reshape2_1.4.4        </span>
-<span class="co">#&gt; [76] codetools_0.2-18       stats4_4.1.0           glue_1.4.2            </span>
-<span class="co">#&gt; [79] evaluate_0.14          data.table_1.14.0      vctrs_0.3.8           </span>
-<span class="co">#&gt; [82] foreach_1.5.1          gtable_0.3.0           purrr_0.3.4           </span>
-<span class="co">#&gt; [85] assertthat_0.2.1       cachem_1.0.6           xfun_0.25             </span>
-<span class="co">#&gt; [88] ragg_1.1.3             survival_3.2-13        tibble_3.1.4          </span>
-<span class="co">#&gt; [91] iterators_1.0.13       memoise_2.0.0          IRanges_2.26.0        </span>
-<span class="co">#&gt; [94] cluster_2.1.2          ellipsis_0.3.2         ROCR_1.0-11</span></code></pre></div>
+<span class="co">#&gt; [22] textshaping_0.3.5      cli_3.0.1              Biobase_2.52.0        </span>
+<span class="co">#&gt; [25] desc_1.3.0             labeling_0.4.2         sass_0.4.0            </span>
+<span class="co">#&gt; [28] scales_1.2.1           pkgdown_1.6.1          systemfonts_1.0.2     </span>
+<span class="co">#&gt; [31] stringr_1.4.0          digest_0.6.27          rmarkdown_2.10        </span>
+<span class="co">#&gt; [34] XVector_0.32.0         pkgconfig_2.0.3        htmltools_0.5.2       </span>
+<span class="co">#&gt; [37] highr_0.9              fastmap_1.1.0          rlang_1.0.4           </span>
+<span class="co">#&gt; [40] rstudioapi_0.13        shape_1.4.6            jquerylib_0.1.4       </span>
+<span class="co">#&gt; [43] generics_0.1.3         farver_2.1.1           jsonlite_1.7.2        </span>
+<span class="co">#&gt; [46] mclust_5.4.7           BiocParallel_1.26.2    dplyr_1.0.7           </span>
+<span class="co">#&gt; [49] RCurl_1.98-1.4         magrittr_2.0.3         GenomeInfoDbData_1.2.6</span>
+<span class="co">#&gt; [52] biomformat_1.20.0      Matrix_1.3-4           Rcpp_1.0.7            </span>
+<span class="co">#&gt; [55] munsell_0.5.0          S4Vectors_0.30.0       Rhdf5lib_1.14.2       </span>
+<span class="co">#&gt; [58] fansi_1.0.3            ape_5.5                lifecycle_1.0.1       </span>
+<span class="co">#&gt; [61] stringi_1.7.4          yaml_2.2.1             MASS_7.3-54           </span>
+<span class="co">#&gt; [64] zlibbioc_1.38.0        rhdf5_2.36.0           plyr_1.8.6            </span>
+<span class="co">#&gt; [67] grid_4.1.0             parallel_4.1.0         crayon_1.5.1          </span>
+<span class="co">#&gt; [70] lattice_0.20-44        Biostrings_2.60.2      splines_4.1.0         </span>
+<span class="co">#&gt; [73] multtest_2.48.0        knitr_1.38             pillar_1.8.1          </span>
+<span class="co">#&gt; [76] igraph_1.2.6           reshape2_1.4.4         codetools_0.2-18      </span>
+<span class="co">#&gt; [79] stats4_4.1.0           glue_1.6.2             evaluate_0.15         </span>
+<span class="co">#&gt; [82] data.table_1.14.0      vctrs_0.4.1            foreach_1.5.2         </span>
+<span class="co">#&gt; [85] gtable_0.3.0           purrr_0.3.4            assertthat_0.2.1      </span>
+<span class="co">#&gt; [88] cachem_1.0.6           xfun_0.30              ragg_1.1.3            </span>
+<span class="co">#&gt; [91] survival_3.2-13        tibble_3.1.8           iterators_1.0.14      </span>
+<span class="co">#&gt; [94] memoise_2.0.1          IRanges_2.26.0         cluster_2.1.2         </span>
+<span class="co">#&gt; [97] ROCR_1.0-11</span></code></pre></div>
 </div>
   </div>
 

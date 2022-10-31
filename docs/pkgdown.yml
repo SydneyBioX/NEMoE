@@ -1,7 +1,8 @@
-pandoc: 2.11.4
+pandoc: 2.17.1.1
 pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
+  Implementation Details: Implementation Details.html
   NEMoE: NEMoE.html
-last_built: 2021-10-06T11:36Z
+last_built: 2022-10-31T04:26Z
 

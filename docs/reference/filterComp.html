@@ -6,10 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Cpp function: calculate the four type of log likelihood function
-(observed likelihood, penalized likelihood,
-complete likelihood, penalized complete likelihood)
-in all levels. — calcLL • NEMoE</title>
+<title>Filter the composition matrix — filterComp • NEMoE</title>
 
 
 <!-- jquery -->
@@ -42,14 +39,8 @@ in all levels. — calcLL • NEMoE</title>
 
 
 
-<meta property="og:title" content="Cpp function: calculate the four type of log likelihood function
-(observed likelihood, penalized likelihood,
-complete likelihood, penalized complete likelihood)
-in all levels. — calcLL" />
-<meta property="og:description" content="Cpp function: calculate the four type of log likelihood function
-(observed likelihood, penalized likelihood,
-complete likelihood, penalized complete likelihood)
-in all levels." />
+<meta property="og:title" content="Filter the composition matrix — filterComp" />
+<meta property="og:description" content="Filter the composition matrix" />
 
 
 
@@ -127,78 +118,43 @@ in all levels." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Cpp function: calculate the four type of log likelihood function
-(observed likelihood, penalized likelihood,
-complete likelihood, penalized complete likelihood)
-in all levels.</h1>
+    <h1>Filter the composition matrix</h1>
     
-    <div class="hidden name"><code>calcLL.Rd</code></div>
+    <div class="hidden name"><code>filterComp.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Cpp function: calculate the four type of log likelihood function
-(observed likelihood, penalized likelihood,
-complete likelihood, penalized complete likelihood)
-in all levels.</p>
+    <p>Filter the composition matrix</p>
     </div>
 
-    <pre class="usage"><span class='fu'>calcLL</span><span class='op'>(</span><span class='va'>X</span>, <span class='va'>Z</span>, <span class='va'>y</span>, <span class='va'>seg</span>, <span class='va'>W</span>, <span class='va'>V</span>, <span class='va'>lambda1</span>, <span class='va'>lambda2</span>, <span class='va'>alpha1</span>, <span class='va'>alpha2</span>, multiply <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>filterComp</span><span class='op'>(</span><span class='va'>X</span>, thresh_func <span class='op'>=</span> <span class='va'>var</span>, thresh <span class='op'>=</span> <span class='fl'>1e-04</span>, id_out <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>X</th>
-      <td><p>an aggregated data matrix (n*P) of input in experts network
-(rbind of all levels input).</p></td>
+      <td><p>the matrix input to filter</p></td>
     </tr>
     <tr>
-      <th>Z</th>
-      <td><p>a data matrix (n*q) of input in gating network.</p></td>
+      <th>thresh_func</th>
+      <td><p>a function to calculate statistics for filtering.
+By default is variance.</p></td>
     </tr>
     <tr>
-      <th>y</th>
-      <td><p>a vector of response (n).</p></td>
+      <th>thresh</th>
+      <td><p>If the statistics of variable smaller than threshold,
+the corresponding variable will filter out. By default is 1e-4.</p></td>
     </tr>
     <tr>
-      <th>seg</th>
-      <td><p>an integer vector of length in each level (L).</p></td>
-    </tr>
-    <tr>
-      <th>W</th>
-      <td><p>aggregated parameters in experts network (cbind of all levels)
-((P+L)*K).</p></td>
-    </tr>
-    <tr>
-      <th>V</th>
-      <td><p>parameters in gating network((q+1)*K).</p></td>
-    </tr>
-    <tr>
-      <th>lambda1</th>
-      <td><p>aggregated penalty lambda parameters in experts network(P*K).</p></td>
-    </tr>
-    <tr>
-      <th>lambda2</th>
-      <td><p>penalty parameters lambda in gating network(q*1).</p></td>
-    </tr>
-    <tr>
-      <th>alpha1</th>
-      <td><p>penalty parameters alpha in experts network(L*K).</p></td>
-    </tr>
-    <tr>
-      <th>alpha2</th>
-      <td><p>penalty parameter alpha in gating network(1).</p></td>
-    </tr>
-    <tr>
-      <th>multiply</th>
-      <td><p>a bool variable indicate whether lambda parameters
-times sample size.</p></td>
+      <th>id_out</th>
+      <td><p>Whether output the id of variable kept in final output.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A matrix of four types of likelihood function.</p>
+    <p>A list of filtered data and/or index.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
