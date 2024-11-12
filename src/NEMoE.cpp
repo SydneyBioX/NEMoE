@@ -214,7 +214,9 @@ NumericMatrix R_sum(NumericMatrix r_i, int L){
 
   int nL = r_i.rows(), K = r_i.cols(), n = nL/L;
   NumericMatrix r_i_s(n, K);
-  IntegerVector slice = seq(0, L - 1)*n;
+  
+  IntegerVector slice = (seq_len(L) - 1)*n;
+//  IntegerVector slice = seq(0, L - 1);
   for(int i = 0; i< n; i++){
     r_i_s.row(i) = colMeans(RowSel(r_i, slice + i));
   }
@@ -512,8 +514,10 @@ NumericVector Pen_L(NumericVector seg, Eigen::MatrixXd W, Eigen::MatrixXd V,
       end_W[l]  = start_W[l] + seg[l] + 1;
     }
     Eigen::MatrixXd W_temp = W.block(start_W[l], 0, seg[l] + 1, K);
-    NumericMatrix lambda_temp = lambda11(seq(start_X[l],end_X[l] - 1),_);
-
+    NumericMatrix lambda_temp = RowSel(lambda11, 
+                                       (seq_len(end_X[l] - start_X[l]) + 
+                                         start_X[l] - 1));
+    
     for(int k=0; k<K; k++){
       pen1_temp += pen_V(W_temp.col(k), lambda_temp.column(k), alpha1(l,k));
     }
@@ -1186,7 +1190,7 @@ Eigen::MatrixXd sMulti0(Eigen::MatrixXd X, Eigen::MatrixXd y, Eigen::VectorXd la
     glmcoef0 = BETA[k];
     glmcoef = glmcoef0;
     beta1 = wrap(glmcoef);
-    beta[seq(1,p)] = beta1;
+    beta[seq_len(p)] = beta1;
     Beta.col(k) = as<Eigen::Map<Eigen::MatrixXd>>(beta);
   }
   return Beta;
@@ -1352,8 +1356,8 @@ Eigen::MatrixXd NEMoE_EM1(Eigen::MatrixXd X, NumericVector seg,
   }
 
   for(int l=0; l<L; l++){
-    r_i_l = RowSel(r_i, seq(l*n, (l + 1)*n - 1));
-    lambda1_temp = lambda1(seq(start_X[l], end_X[l] - 1),_);
+    r_i_l = RowSel(r_i, (seq_len(n) + l*n - 1));
+    lambda1_temp = RowSel(lambda1, (seq_len(end_X[l] - start_X[l]) + start_X[l] - 1));
     if(EM_opt == 1){
       W.block(start_W[l], 0, seg[l] + 1, K) =
         NEMoE_CEM_W(X.block(0, start_X[l], n, seg[l]),
@@ -1438,8 +1442,7 @@ Eigen::MatrixXd calcPen_fac(Eigen::MatrixXd X, Eigen::MatrixXd Z,
     r_temp = onepl * ones.transpose() * r_i;
     mu = (((X.transpose()* r_i).array())/(r_temp.array())).matrix();
     sgm = (((X.array().square().matrix().transpose() * r_i).array() -
-      ((mu.array().square()) * (r_temp.array())).sqrt())
-             /(r_temp.array())).matrix();
+      ((mu.array().square()) * (r_temp.array())).sqrt())/(r_temp.array())).matrix();
     pen_fac = ((((onepl * ones.transpose() * r_i).array())/n)
                  *sgm.array()).matrix();
 
